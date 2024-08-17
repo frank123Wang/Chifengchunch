@@ -1,9 +1,0 @@
-function processFormData() {
-  const nameElement = document.getElementById('name');
-  const name = nameElement.value;
-  const emailElement = document.getElementById('email');
-  const email = emailElement.value;
-  alert('你的姓名是 ' + name + '\n電子郵件是 ' + email);
-  console.log(name)
-  console.log(email)/*在html中點選console會顯示資訊*/
-}
