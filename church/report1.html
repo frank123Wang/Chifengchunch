@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="JS/http-native.js"></script>
+    <title>赤峰街教會小組人數回報</title>
+    <link rel="stylesheet" href="sytle.css">
+  </head>
+  <body>
+    <h1>赤峰街教會小組人數回報頁面</h1>
+    <div>
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
+        
+        <form action="https://script.google.com/macros/s/AKfycbwJ8-0zsSBRPIGEfnBPuDOtpuYgGuPn3IusyJ79bjyMswWp0_zX4yzZnTs0Tcx6L5cZrw/exec" method="post" >
+            <input type="radio" name="group" value="養生小組">養生小組
+            <input type="radio" name="group" value="美食小組">美食小組
+            <input type="radio" name="group" value="旅遊小組">旅遊小組
+            <input type="radio" name="group" value="下班放輕鬆">下班放輕鬆
+            <input type="radio" name="group" value="聖樂小組">聖樂小組
+            <br>
+            <input type="radio" name="group" value="週三禱告會">週三禱告會
+            <input type="radio" name="group" value="門徒造就班">門徒造就班
+            <input type="radio" name="group" value="聖禮典">聖禮典
+            <input type="radio" name="group" value="聖歌隊">聖歌隊
+            <br>
+            <input type="radio" name="group" value="婦女團契">婦女團契
+            <input type="radio" name="group" value="樂活團契">樂活團契
+            <input type="radio" name="group" value="醫院探訪">醫院探訪
+            <input type="radio" name="group" value="家庭探訪">家庭探訪
+            <br>
+            <span>聚會人數：</span><input type="number" name="number"/><input type="submit" value="確認送出" /><br/>
+
+        </form>
+
+
+    </div>
+     
+    
+
+
+  </body>
+</html>
