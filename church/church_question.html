@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    
+    
 </head>
  <style>
     .video-container {
@@ -19,13 +21,11 @@
       border: 1;
     }
  </style>
- function redirectToGoogle() {
-           window.location.href = "https://www.google.com.tw";
-       }
+
 
     
 <body>
-<form>
+<form  action="your-server-endpoint" method="post" onsubmit="event.preventDefault(); redirectToGoogle();">
 
     <div class="video-container">
 <iframe class="video" src="https://frank123wang.github.io/Chifengchunch/church/1060005866-4.pdf" >
@@ -40,4 +40,15 @@
 </form>
 
 </body>
+<script>
+ function redirectToGoogle() {
+           window.location.href = "https://www.google.com.tw";
+       }
+
+
+    
+</script>
+
+
+    
 </html>
