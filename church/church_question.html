@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    
-    
 </head>
  <style>
     .video-container {
@@ -21,34 +19,18 @@
       border: 1;
     }
  </style>
-
-
-    
 <body>
-<form  action="your-server-endpoint" method="post" onsubmit="event.preventDefault(); redirectToGoogle();">
+<form action="https://script.google.com/macros/s/AKfycbzfjA81Ga1rJ8p35sNKaBLRd7RYtilw4CSWXbPKjeA/dev" method="post">
 
     <div class="video-container">
 <iframe class="video" src="https://frank123wang.github.io/Chifengchunch/church/1060005866-4.pdf" >
     看不到頁面時才會顯示這行文字
   </iframe>
    </div>
+    <input type="text" name="food" placeholder="輸入姓名" required>
+<button type="submit">電子同意簽名回傳</button>
 
-
-
-    <input type="text" name="example" placeholder="Example Input" required>
-<button type="submit">Submit</button>
 </form>
 
 </body>
-<script>
- function redirectToGoogle() {
-           window.location.href = "https://www.google.com.tw";
-       }
-
-
-    
-</script>
-
-
-    
 </html>
