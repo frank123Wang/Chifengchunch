@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="JS/http-native.js"></script>
+    <title>赤峰街教會線上點名</title>
+    <link rel="stylesheet" href="sytle.css">
+  <script defer data-domain="plum-marice-37.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script><script type="text/javascript" src="https://tiiny.host/ad-script.js"></script><script defer data-domain="violet-crissie-51.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script><script type="text/javascript" src="https://tiiny.host/ad-script.js"></script><script defer data-domain="violet-crissie-51.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script><script type="text/javascript" src="https://tiiny.host/ad-script.js"></script></head>
+  <body>
+    <h1>赤峰街教會主日 點名/查詢網頁</h1>
+    <div>
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
+        
+        <form action="https://script.google.com/macros/s/AKfycbxMnjxznkYTomKQysYbMPGcxmW_CzFHX2sgO_HWkmN5ZCcVr99pf2LAt6uX8lw_8xYftw/exec" method="post" >
+            <span>簽到座號：</span><input type="number" name="name"required placeholder="座號"/><input type="submit" value="確認送出" /><br/>
+            
+        </form>
+
+        <form name="form" id="form">
+          輸入座號查姓名：
+            <input type="text" name="name" id="number" /> 
+            <input type="button" name="submit" value="送出" onclick="processFormData();" /> 
+          </form>
+
+          <form name="form" id="form">
+            輸入姓名查座號：
+            <input type="text" name="name" id="name" /> 
+            <input type="button" name="submit" value="送出" onclick="processFormName();" /> 
+          </form>
+      </div>
+      <br>
+    <h2>赤峰街教會 上傳掃碼檔案</h2> 
+    <div>
+      <input type="file" onchange="loadFile(this.files[0])" >
+    <form id="myForm" action="https://script.google.com/macros/s/AKfycbyLPyIXSwwRAPDDfUkbPWXNY3XSLwqlY4F-mLIZtKuzUv_VFaYcn0cYEvA05VkDgsGvjA/exec" method="post" >
+        
+        <input type="hidden" id="myInput"  name="array" value="" />
+        <input type="submit" value="確認送出" /><br/>
+        </form>  
+    <pre id="output"></pre>
+    <script>
+        let NewStock = [];
+        async function loadFile(file) {
+          let text = await file.text();
+          //document.getElementById('output').textContent = text;
+          //a=text.replace(/\n/g,""); //用正則表示
+         
+          let attr=text.split('\n');
+          var myArrayNew = attr.filter(el => el);//移除空白陣列
+
+         
+          myArrayNew.forEach(function (value) {
+          if (NewStock.indexOf(value) == -1) {
+          NewStock.push(value);
+          }
+          });
+          console.log(NewStock);
+          //將上傳的資料放入成一個NewStock陣列  
+          const arrayInput = document.querySelector('input[name="array"]');
+          var arrayStr = JSON.stringify(NewStock); //陣列轉換回字串的方式
+          arrayInput.value=arrayStr //重新將資料丟入google app script 中
+          //arrayInput.value =text
+          
+        }
+         
+
+    
+    </script> 
+
+
+
+
+
+    </div>   
+    <br>      
+    <h3>赤峰街教會 寄送信件與未出席名單</h3> 
+    <form id="myForm" action="https://script.google.com/macros/s/AKfycbyH7BXsn6vMASgTn_iWALG9Orcz6kmAVw_POXFCO89nB2eBy7Az630ruxJthFDBf0xV7A/exec" method="get" >
+                              
+      <input type="hidden" id="myInput"  name="array" value="" />
+      <input type="submit" value="寄送信件" /><br/>
+      </form>  
+   
+
+
+
+  </body>
+</html>
