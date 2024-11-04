@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>赤峰街教會投票系統</title>
+</head>
+<!-- 這裡使用了一張背景，註釋掉了。
+<body style="background-image:url(body.jpeg); background-size:100%; background-repeat: no-repeat;">
+ -->
+ <body>
+	<div align="left center"><img src="456.png" /></div>
+	<div  align="center">
+	<h4>長執會投票</h4>
+		<table id="main" >
+			<tr >
+				<td>
+					<input type="radio" name="option" checked="checked"/>Frank
+				</td>
+			</tr>
+			<tr>
+				<td style="width:550px">
+					<div id=0 style="background-color:#acd6ff; width:0; height:20px; border-width:0px;">
+					</div>
+				</td>
+				<td>
+					<label id="label0">0</label>票
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="radio" name="option"  />Tom
+				</td>
+			</tr>
+			<tr >
+				<td>
+					<div id=1 style="background-color:#0066cc; height:20px; width:0; border-width:0px; border-color:blue; border-style:solid ; text-align:right;" ></div>
+
+				</td>
+				<td>
+				<label id="label1">0</label>票
+				</td>
+			</tr>
+			<tr >
+				<td>
+					<input type="radio" name="option"  />Yellow
+				</td>
+			</tr>
+			<tr >
+				<td>
+					<div id=2 style="background-color:#ff7575; height:20px;width:0;  border-width:0px; border-color:blue; border-style:solid ; text-align:right;" ></div>
+
+				</td>
+				<td>
+				<label id="label2">0</label>票
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="radio" name="option" />Ice
+				</td>
+			</tr>
+			<tr >
+				<td>
+					<div id=3 style="background-color:#5cadad;height:20px;width:0; border-width:0px; border-color:blue; border-style:solid ; text-align:right;" ></div>
+
+				</td>
+				<td>
+				<label id="label3">0</label>票
+				</td>
+			</tr>
+
+			<tr>
+				<td><p>
+					<input type="submit" value="確認投票" onclick="vote()"/>
+				</td>
+			</tr>
+		</table>
+	</div>
+</body>
+<script type="text/javascript">
+
+	//在每個投票選項後面寫了個div，用div的寬度來代表當前該選項的投票數。
+	function vote(){	//函式vote，當點選確認投票的時候，呼叫vote方法
+
+		//for迴圈的條件是，所有投票選項的個數。
+		for(var i = 0; i < document.getElementsByName("option").length; i++){
+
+			//查詢到是哪個投票選項被選中
+			if(document.getElementsByName("option")[i].checked == true){
+				var width = document.getElementById(i).style.width;	//獲取到當前選項的寬度。
+				width = parseInt(width);//將寬度轉化為int型，因為獲取到的width的單位是px
+				width += 3;//改變width的值，這裡就是定義每次投票的進度條的增速
+				document.getElementById(i).style.width = width+"px";//修改原div的寬度
+
+				var label = "label"+i;//lable標籤裡面寫的是當前的投票數目。
+				var num = document.getElementById(label).innerText;//獲取到當前的票數
+				document.getElementById(label).innerText = ++num;//票數加1，並修改原值
+			}
+		}
+
+		//alert("投票成功");
+
+	}
+
+</script>
+</html>
