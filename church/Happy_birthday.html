@@ -30,6 +30,11 @@ person = {
 	'11': '蘇修鋒、王連甫、董淑容',
 	'12': '劉奕昀、趙詩伯',
 }
+
+if (person[today.getMonth()+1] != undefined) 
+{
+
+	
 const next_month=today.getMonth()+1
 const test_value=today.getMonth() + '、'+next_month+'月壽星'
 console.log(test_value)
@@ -38,7 +43,7 @@ h1.innerHTML=test_value
 const text_name=document.querySelector('#name')
 text_name.value  =person[today.getMonth()] + '、'+ person[today.getMonth()+1]
 
-
+}
 
 
 
