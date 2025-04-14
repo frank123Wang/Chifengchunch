@@ -6,7 +6,6 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-      <link rel="stylesheet" href="style.css">
 
     <title>赤峰街教會週報查詢</title>
 
@@ -17,7 +16,6 @@
 <body>
 
   <h1>2025赤峰街教會週報查詢</h1>
-   <div class="static">
     <form id="myForm">
 
          <label>
@@ -28,12 +26,37 @@
 
 
 
-
         <button type="button" onclick="getInputValue()">送出</button>
 
 
     </form>
- </div>
+
+
+  <h1>2025赤峰街教會週報答案</h1>
+
+  <form id="myForm2">
+
+         <label>
+    區間日期:
+    <input type="date" name="username" min="20250101" max="20251231" />
+  </label>
+
+
+
+
+        <button type="button" onclick="getInputValue2()">送出</button>
+
+
+    </form>
+
+
+
+
+
+
+
+
+
 
     <script>
 
@@ -58,6 +81,29 @@
 
 
         }
+
+
+        function getInputValue2() {
+
+
+            var inputVal = document.forms["myForm2"]["username"].value;
+            if (inputVal == "") {
+            alert("請輸入正確日期");
+             return false;
+            }
+
+
+
+            inputVal=inputVal.replace('2025-','')
+
+            var format="週報-答案.pdf"
+            window.location.assign(inputVal+format)
+
+
+
+
+        }
+
 
 
     </script>
