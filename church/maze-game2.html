@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="菜頭迷宮">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="msapplication-navbutton-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>迷宮遊戲 - 菜頭大冒險</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --vh: 1vh;
+            --vw: 1vw;
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-right: env(safe-area-inset-right, 0px);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-inset-left: env(safe-area-inset-left, 0px);
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100); /* iOS Safari 支援 */
+            height: -webkit-fill-available;
+            width: 100vw;
+            width: calc(var(--vw, 1vw) * 100);
+            margin: 0;
+            padding: var(--safe-area-inset-top, 0px) var(--safe-area-inset-right, 0px) var(--safe-area-inset-bottom, 0px) var(--safe-area-inset-left, 0px);
+            box-sizing: border-box;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            -webkit-overflow-scrolling: touch; /* iOS 平滑滾動 */
+            -webkit-user-select: none; /* 防止文字選取 */
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none; /* 禁用 iOS 長按選單 */
+            -webkit-tap-highlight-color: transparent; /* 移除點擊高亮 */
+        }
+
+        .game-container {
+            background: #1a1a1a;
+            border-radius: 0;
+            padding: 2px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .game-header {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 5px;
+            flex-shrink: 0;
+            padding: 5px;
+        }
+
+        .game-header h1 {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 5px;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+        }
+
+        .level-info, .stars-info {
+            background: rgba(52, 73, 94, 0.8);
+            padding: 4px 10px;
+            border-radius: 15px;
+            border: 1px solid #3498db;
+        }
+
+        .start-hint {
+            color: #3498db;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #gameCanvas {
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            background: #000;
+            display: block;
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+            touch-action: none; /* 防止手機瀏覽器的預設觸摸行為 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .game-controls {
+            margin-top: 5px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 3px;
+        }
+
+        .control-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 36px; /* 稍微減小但保持可觸摸 */
+            min-width: 36px;
+        }
+
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+            background: #1f5f8b;
+        }
+
+        /* 手機觸摸反饋 */
+        @media (pointer: coarse) {
+            .control-btn:active {
+                transform: scale(0.95);
+                background: #1f5f8b;
+            }
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ecf0f1;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 5px;
+            background: #34495e;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none; /* 標準屬性 */
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none; /* 標準屬性 */
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #34495e;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 桌面大螢幕優化 */
+        @media (min-width: 1200px) {
+            .game-container {
+                max-width: 98vw;
+                padding: 20px;
+            }
+
+            .game-header h1 {
+                font-size: 2.2rem;
+            }
+
+            .game-info {
+                font-size: 1.1rem;
+            }
+
+            #gameCanvas {
+                max-width: min(95vw, 1400px);
+                max-height: calc(95vh - 180px);
+            }
+
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+
+        /* 中等螢幕優化 */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .game-container {
+                max-width: 95vw;
+                padding: 18px;
+            }
+
+            #gameCanvas {
+                max-width: min(90vw, 1000px);
+                max-height: calc(95vh - 200px);
+            }
+        }
+
+        /* 手機響應式設計 */
+        @media (max-width: 768px) {
+            body {
+                padding: env(safe-area-inset-top, 2px) env(safe-area-inset-right, 2px) env(safe-area-inset-bottom, 2px) env(safe-area-inset-left, 2px);
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+
+            .game-container {
+                padding: 3px;
+                margin: 0;
+                min-height: auto;
+                max-width: 100%;
+                width: 100vw;
+            }
+
+            .game-header h1 {
+                font-size: 1rem;
+            }
+
+            .game-info {
+                flex-direction: row;
+                gap: 8px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .level-info, .stars-info {
+                font-size: 0.8rem;
+                padding: 3px 8px;
+                min-height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #gameCanvas {
+                max-width: calc(100vw - 8px);
+                width: calc(100vw - 8px);
+            }
+
+            .control-btn {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+                min-height: 32px;
+                min-width: 32px;
+            }
+
+            .volume-slider {
+                width: 60px;
+                height: 6px;
+            }
+
+            .game-controls {
+                flex-wrap: wrap;
+                gap: 4px;
+                margin-top: 3px;
+            }
+        }
+
+        /* 小螢幕手機 */
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 2px;
+            }
+
+            .game-header h1 {
+                font-size: 0.9rem;
+            }
+
+            .game-controls {
+                gap: 3px;
+            }
+
+            .control-btn {
+                padding: 3px 6px;
+                font-size: 0.6rem;
+                min-height: 28px;
+                min-width: 28px;
+            }
+
+            #gameCanvas {
+                max-width: calc(100vw - 6px);
+                width: calc(100vw - 6px);
+            }
+        }
+
+        /* 橫屏模式優化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                align-items: flex-start;
+                padding-top: 10px;
+            }
+
+            .game-container {
+                min-height: auto;
+                max-height: 95vh;
+            }
+
+            .game-header {
+                margin-bottom: 10px;
+            }
+
+            .game-header h1 {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+
+            .game-info {
+                flex-direction: row;
+                gap: 15px;
+                margin-bottom: 8px;
+            }
+
+            .mobile-controls {
+                margin-top: 10px;
+            }
+
+            .direction-pad {
+                grid-template-columns: repeat(3, 50px);
+                grid-template-rows: repeat(3, 50px);
+            }
+        }
+
+        /* 觸摸設備的虛擬方向鍵 */
+        .mobile-controls {
+            display: none;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) and (pointer: coarse) {
+            .mobile-controls {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .direction-pad {
+                display: grid;
+                grid-template-columns: repeat(3, 45px);
+                grid-template-rows: repeat(3, 45px);
+                gap: 5px;
+            }
+
+            .direction-btn {
+                background: rgba(52, 152, 219, 0.8);
+                border: 1px solid #3498db;
+                border-radius: 8px;
+                color: white;
+                font-size: 1.2rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-tap-highlight-color: transparent;
+                transition: all 0.2s ease;
+                min-height: 45px;
+                min-width: 45px;
+                touch-action: manipulation;
+            }
+
+            .direction-btn:active {
+                background: rgba(41, 128, 185, 0.9);
+                transform: scale(0.9);
+                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .direction-btn.up { grid-column: 2; grid-row: 1; }
+            .direction-btn.left { grid-column: 1; grid-row: 2; }
+            .direction-btn.right { grid-column: 3; grid-row: 2; }
+            .direction-btn.down { grid-column: 2; grid-row: 3; }
+        }
+
+        /* iOS 特定優化 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .game-container {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <h2>載入遊戲資源中...</h2>
+        <p>請稍候</p>
+    </div>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🥕 迷宮遊戲 - 菜頭大冒險 🎄</h1>
+            <div class="game-info">
+                <div class="level-info">
+                    關卡: <span id="currentLevel">1</span> / 5
+                </div>
+                <div class="stars-info">
+                    星星: <span id="collectedStars">0</span> ⭐
+                </div>
+            </div>
+            <div class="start-hint" id="startHint" style="display: none;">
+                按 空白鍵 開始遊戲
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+
+        <div class="game-controls">
+            <button class="control-btn" id="startBtn" style="display: none;">開始遊戲</button>
+            <button class="control-btn" id="restartBtn">重新開始</button>
+            <button class="control-btn" id="pauseBtn">暫停</button>
+            <div class="audio-controls">
+                <button class="control-btn" id="muteBtn">🔊</button>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+            </div>
+        </div>
+
+        <!-- 手機虛擬方向鍵 -->
+        <div class="mobile-controls">
+            <div class="direction-pad">
+                <div class="direction-btn up" data-direction="up">↑</div>
+                <div class="direction-btn left" data-direction="left">←</div>
+                <div class="direction-btn right" data-direction="right">→</div>
+                <div class="direction-btn down" data-direction="down">↓</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲常數定義
+        const GAME_CONSTANTS = {
+            MAZE_CELL: { WALL: 1, PATH: 0, START: 2, EXIT: 3 },
+            GAME_STATUS: {
+                LOADING: 'loading', READY: 'ready', PLAYING: 'playing',
+                PAUSED: 'paused', LEVEL_COMPLETE: 'levelComplete',
+                GAME_COMPLETE: 'gameComplete'
+            },
+            DIRECTION: { UP: 'up', DOWN: 'down', LEFT: 'left', RIGHT: 'right' },
+            LEVEL_CONFIG: {
+                1: { size: 25, complexity: 'simple' },
+                2: { size: 35, complexity: 'medium' },
+                3: { size: 45, complexity: 'medium' },
+                4: { size: 55, complexity: 'complex' },
+                5: { size: 65, complexity: 'ultra' }
+            },
+            RENDER: {
+                CELL_SIZE: 30, WALL_COLOR: '#ffffff', PATH_COLOR: '#000000',
+                PLAYER_COLOR: '#ffffff', STAR_COLOR: '#FFD700'
+            },
+            GAME: { TOTAL_LEVELS: 5, CANVAS_WIDTH: 600, CANVAS_HEIGHT: 600 }
+        };
+
+        const KEY_MAPPING = {
+            'ArrowUp': GAME_CONSTANTS.DIRECTION.UP, 'ArrowDown': GAME_CONSTANTS.DIRECTION.DOWN,
+            'ArrowLeft': GAME_CONSTANTS.DIRECTION.LEFT, 'ArrowRight': GAME_CONSTANTS.DIRECTION.RIGHT,
+            'KeyW': GAME_CONSTANTS.DIRECTION.UP, 'KeyS': GAME_CONSTANTS.DIRECTION.DOWN,
+            'KeyA': GAME_CONSTANTS.DIRECTION.LEFT, 'KeyD': GAME_CONSTANTS.DIRECTION.RIGHT
+        };
+
+        const SPECIAL_KEYS = { 'Space': 'start', 'Enter': 'start', 'Escape': 'pause' };
+
+        // 工具函數
+        class Utils {
+            static isMobile() {
+                // 更精確的手機檢測
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                
+                // 檢查是否為手機設備
+                const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i;
+                const isMobileUA = mobileRegex.test(userAgent);
+                
+                // 檢查觸摸支援和螢幕尺寸
+                const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                const isSmallScreen = window.innerWidth <= 768;
+                
+                // iOS 特定檢測
+                const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+                
+                // Android 特定檢測
+                const isAndroid = /Android/i.test(userAgent);
+                
+                return isMobileUA || (hasTouchScreen && isSmallScreen) || isIOS || isAndroid;
+            }
+
+            static isIOS() {
+                return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            }
+
+            static isAndroid() {
+                return /Android/i.test(navigator.userAgent);
+            }
+
+            static getDevicePixelRatio() {
+                return window.devicePixelRatio || 1;
+            }
+
+            static getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            static getRandomElement(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            }
+
+            static positionsEqual(pos1, pos2) {
+                return pos1.x === pos2.x && pos1.y === pos2.y;
+            }
+
+            static manhattanDistance(pos1, pos2) {
+                return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+            }
+
+            static deepClone(obj) {
+                return JSON.parse(JSON.stringify(obj));
+            }
+
+            static createEventEmitter() {
+                const events = {};
+                return {
+                    on(event, callback) {
+                        if (!events[event]) events[event] = [];
+                        events[event].push(callback);
+                    },
+                    off(event, callback) {
+                        if (events[event]) {
+                            events[event] = events[event].filter(cb => cb !== callback);
+                        }
+                    },
+                    emit(event, ...args) {
+                        if (events[event]) {
+                            events[event].forEach(callback => callback(...args));
+                        }
+                    }
+                };
+            }
+
+            static debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+        }
+
+        // 關卡管理器
+        class LevelManager {
+            constructor() {
+                this.currentLevel = 1;
+                this.levels = new Map();
+                this.eventEmitter = Utils.createEventEmitter();
+                this.generateAllLevels();
+            }
+
+            generateAllLevels() {
+                for (let level = 1; level <= GAME_CONSTANTS.GAME.TOTAL_LEVELS; level++) {
+                    const levelData = this.generateLevel(level);
+                    this.levels.set(level, levelData);
+                }
+            }
+
+            generateLevel(levelNumber) {
+                const config = GAME_CONSTANTS.LEVEL_CONFIG[levelNumber];
+                const maze = this.generateMaze(config.size, config.complexity);
+                const { playerStart, starPosition } = this.findStartAndExit(maze);
+
+                return {
+                    levelNumber, maze, playerStart, starPosition,
+                    difficulty: config.complexity, size: config.size
+                };
+            }
+
+            generateMaze(size, complexity) {
+                const maze = Array(size).fill().map(() => Array(size).fill(GAME_CONSTANTS.MAZE_CELL.WALL));
+                this.generateMazeRecursive(maze, 1, 1, size);
+                this.adjustMazeComplexity(maze, complexity);
+                return maze;
+            }
+
+            generateMazeRecursive(maze, x, y, size) {
+                const directions = [[0, 2], [2, 0], [0, -2], [-2, 0]];
+                
+                for (let i = directions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [directions[i], directions[j]] = [directions[j], directions[i]];
+                }
+
+                maze[y][x] = GAME_CONSTANTS.MAZE_CELL.PATH;
+
+                for (const [dx, dy] of directions) {
+                    const newX = x + dx;
+                    const newY = y + dy;
+
+                    if (newX > 0 && newX < size - 1 && newY > 0 && newY < size - 1 && 
+                        maze[newY][newX] === GAME_CONSTANTS.MAZE_CELL.WALL) {
+                        
+                        maze[y + dy / 2][x + dx / 2] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                        this.generateMazeRecursive(maze, newX, newY, size);
+                    }
+                }
+            }
+
+            adjustMazeComplexity(maze, complexity) {
+                const size = maze.length;
+                let additionalPaths = 0;
+
+                switch (complexity) {
+                    case 'simple': additionalPaths = Math.floor(size * 0.15); break;
+                    case 'medium': additionalPaths = Math.floor(size * 0.25); break;
+                    case 'complex': additionalPaths = Math.floor(size * 0.35); break;
+                    case 'ultra': additionalPaths = Math.floor(size * 0.45); break;
+                }
+
+                // 增加更多路徑以提高複雜度
+                for (let i = 0; i < additionalPaths; i++) {
+                    const x = Utils.getRandomInt(1, size - 2);
+                    const y = Utils.getRandomInt(1, size - 2);
+                    if (maze[y][x] === GAME_CONSTANTS.MAZE_CELL.WALL) {
+                        maze[y][x] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                    }
+                }
+
+                // 為複雜和超級複雜度添加額外的連接路徑
+                if (complexity === 'complex' || complexity === 'ultra') {
+                    const extraConnections = complexity === 'ultra' ? Math.floor(size * 0.2) : Math.floor(size * 0.1);
+                    for (let i = 0; i < extraConnections; i++) {
+                        const x = Utils.getRandomInt(2, size - 3);
+                        const y = Utils.getRandomInt(2, size - 3);
+                        // 創建十字形路徑增加複雜度
+                        if (maze[y][x] === GAME_CONSTANTS.MAZE_CELL.WALL) {
+                            maze[y][x] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                            if (x > 1) maze[y][x-1] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                            if (x < size-2) maze[y][x+1] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                            if (y > 1) maze[y-1][x] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                            if (y < size-2) maze[y+1][x] = GAME_CONSTANTS.MAZE_CELL.PATH;
+                        }
+                    }
+                }
+            }
+
+            findStartAndExit(maze) {
+                const size = maze.length;
+                const pathCells = [];
+
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        if (maze[y][x] === GAME_CONSTANTS.MAZE_CELL.PATH) {
+                            pathCells.push({ x, y });
+                        }
+                    }
+                }
+
+                if (pathCells.length < 2) {
+                    throw new Error('迷宮中沒有足夠的路徑');
+                }
+
+                let maxDistance = 0;
+                let playerStart = pathCells[0];
+                let starPosition = pathCells[1];
+
+                for (let i = 0; i < pathCells.length; i++) {
+                    for (let j = i + 1; j < pathCells.length; j++) {
+                        const distance = Utils.manhattanDistance(pathCells[i], pathCells[j]);
+                        if (distance > maxDistance) {
+                            maxDistance = distance;
+                            playerStart = pathCells[i];
+                            starPosition = pathCells[j];
+                        }
+                    }
+                }
+
+                return { playerStart, starPosition };
+            }
+
+
+
+            loadLevel(levelNumber) {
+                if (!this.levels.has(levelNumber)) {
+                    throw new Error(`關卡 ${levelNumber} 不存在`);
+                }
+
+                this.currentLevel = levelNumber;
+                const levelData = this.levels.get(levelNumber);
+                this.eventEmitter.emit('levelLoaded', levelData);
+                return levelData;
+            }
+
+            getCurrentLevel() {
+                return this.levels.get(this.currentLevel);
+            }
+
+            checkWinCondition(playerPosition, starPosition) {
+                return Utils.positionsEqual(playerPosition, starPosition);
+            }
+
+            on(event, callback) { this.eventEmitter.on(event, callback); }
+            off(event, callback) { this.eventEmitter.off(event, callback); }
+        }
+
+        // 玩家類別
+        class Player {
+            constructor(x = 0, y = 0) {
+                this.x = x;
+                this.y = y;
+                this.startX = x;
+                this.startY = y;
+                this.eventEmitter = Utils.createEventEmitter();
+                this.moveHistory = [];
+            }
+
+            setStartPosition(x, y) {
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+            }
+
+            move(direction, maze) {
+                const newPosition = this.calculateNewPosition(direction);
+                
+                if (this.canMoveTo(newPosition, maze)) {
+                    const oldPosition = { x: this.x, y: this.y };
+                    this.x = newPosition.x;
+                    this.y = newPosition.y;
+                    
+                    this.moveHistory.push({
+                        from: oldPosition,
+                        to: { x: this.x, y: this.y },
+                        direction,
+                        timestamp: Date.now()
+                    });
+
+                    this.eventEmitter.emit('playerMoved', {
+                        oldPosition,
+                        newPosition: { x: this.x, y: this.y },
+                        direction
+                    });
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            calculateNewPosition(direction) {
+                let newX = this.x, newY = this.y;
+
+                switch (direction) {
+                    case GAME_CONSTANTS.DIRECTION.UP: newY--; break;
+                    case GAME_CONSTANTS.DIRECTION.DOWN: newY++; break;
+                    case GAME_CONSTANTS.DIRECTION.LEFT: newX--; break;
+                    case GAME_CONSTANTS.DIRECTION.RIGHT: newX++; break;
+                }
+
+                return { x: newX, y: newY };
+            }
+
+            canMoveTo(position, maze) {
+                const { x, y } = position;
+                
+                if (x < 0 || y < 0 || y >= maze.length || x >= maze[0].length) {
+                    return false;
+                }
+
+                return maze[y][x] !== GAME_CONSTANTS.MAZE_CELL.WALL;
+            }
+
+            resetToStart() {
+                const oldPosition = { x: this.x, y: this.y };
+                this.x = this.startX;
+                this.y = this.startY;
+                
+                this.eventEmitter.emit('playerReset', {
+                    oldPosition,
+                    newPosition: { x: this.x, y: this.y }
+                });
+
+                this.moveHistory = [];
+            }
+
+            getPosition() {
+                return { x: this.x, y: this.y };
+            }
+
+            isAt(position) {
+                return Utils.positionsEqual(this.getPosition(), position);
+            }
+
+            on(event, callback) { this.eventEmitter.on(event, callback); }
+            off(event, callback) { this.eventEmitter.off(event, callback); }
+        }
+
+        // 迷宮渲染器
+        class MazeRenderer {
+            constructor(canvas, ctx) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.cellSize = GAME_CONSTANTS.RENDER.CELL_SIZE;
+                this.canvasWidth = canvas.width;
+                this.canvasHeight = canvas.height;
+                this.updateCellSize();
+            }
+
+            updateCanvasSize(width, height) {
+                this.canvasWidth = width;
+                this.canvasHeight = height;
+                this.updateCellSize();
+            }
+
+            updateCellSize() {
+                // 根據當前迷宮大小動態計算，真正全螢幕適應
+                const currentMazeSize = this.currentMaze ? this.currentMaze.length : 25;
+                
+                // 使用完整的 Canvas 尺寸，幾乎不留邊距
+                const availableWidth = this.canvasWidth - 4;
+                const availableHeight = this.canvasHeight - 4;
+                const canvasSize = Math.min(availableWidth, availableHeight);
+                
+                // 計算格子大小以完全填滿可用空間
+                this.cellSize = Math.floor(canvasSize / currentMazeSize);
+                
+                // 動態調整最小格子大小，根據螢幕大小
+                const minCellSize = Math.max(3, Math.floor(canvasSize / 100)); // 螢幕越大，最小格子也越大
+                this.cellSize = Math.max(this.cellSize, minCellSize);
+                
+                // 如果計算出的格子太小，稍微減少迷宮邊距來增加格子大小
+                if (this.cellSize < 8) {
+                    this.cellSize = Math.floor((canvasSize + 2) / currentMazeSize);
+                }
+            }
+
+            drawMaze(maze) {
+                if (!maze || !Array.isArray(maze)) return;
+
+                // 更新當前迷宮並重新計算格子大小
+                this.currentMaze = maze;
+                this.updateCellSize();
+
+                const rows = maze.length;
+                const cols = maze[0]?.length || 0;
+                
+                const mazeWidth = cols * this.cellSize;
+                const mazeHeight = rows * this.cellSize;
+                const offsetX = (this.canvasWidth - mazeWidth) / 2;
+                const offsetY = (this.canvasHeight - mazeHeight) / 2;
+
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = offsetX + col * this.cellSize;
+                        const y = offsetY + row * this.cellSize;
+                        const cellType = maze[row][col];
+
+                        this.drawCell(x, y, cellType);
+                    }
+                }
+            }
+
+            drawCell(x, y, cellType) {
+                this.ctx.fillStyle = cellType === GAME_CONSTANTS.MAZE_CELL.WALL 
+                    ? GAME_CONSTANTS.RENDER.WALL_COLOR 
+                    : GAME_CONSTANTS.RENDER.PATH_COLOR;
+                
+                this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
+            }
+
+            drawGameObject(position, color, symbol) {
+                const maze = this.currentMaze;
+                if (!maze) return;
+
+                const cols = maze[0]?.length || 0;
+                const mazeWidth = cols * this.cellSize;
+                const mazeHeight = maze.length * this.cellSize;
+                const offsetX = (this.canvasWidth - mazeWidth) / 2;
+                const offsetY = (this.canvasHeight - mazeHeight) / 2;
+
+                const x = offsetX + position.x * this.cellSize;
+                const y = offsetY + position.y * this.cellSize;
+
+                // 繪製背景
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
+                
+                // 添加邊框
+                this.ctx.strokeStyle = '#333333';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
+                
+                // 添加符號，根據格子大小調整字體
+                this.ctx.fillStyle = '#000000';
+                const fontSize = Math.max(12, Math.min(this.cellSize * 0.7, 32));
+                this.ctx.font = `${fontSize}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                // 如果格子太小，使用簡單的形狀而不是 emoji
+                if (this.cellSize < 25) {
+                    if (symbol === '🥕') {
+                        // 菜頭用橘色圓形表示
+                        this.ctx.fillStyle = '#FF8C00';
+                        this.ctx.beginPath();
+                        this.ctx.arc(x + this.cellSize/2, y + this.cellSize/2, Math.max(2, this.cellSize/3), 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        // 添加邊框讓它更明顯
+                        this.ctx.strokeStyle = '#FF4500';
+                        this.ctx.lineWidth = Math.max(1, this.cellSize/8);
+                        this.ctx.stroke();
+                    } else if (symbol === '⭐') {
+                        this.drawStarShape(this.ctx, x + this.cellSize/2, y + this.cellSize/2, Math.max(2, this.cellSize/3));
+                    }
+                } else {
+                    // 格子夠大時使用 emoji
+                    this.ctx.fillText(symbol, x + this.cellSize/2, y + this.cellSize/2);
+                }
+            }
+
+            drawStarShape(ctx, cx, cy, radius) {
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                    const x = cx + Math.cos(angle) * radius;
+                    const y = cy + Math.sin(angle) * radius;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = Math.max(1, radius/4);
+                ctx.stroke();
+            }
+
+            drawPlayer(position) {
+                this.drawGameObject(position, GAME_CONSTANTS.RENDER.PLAYER_COLOR, '🥕');
+            }
+
+
+
+            drawStar(position) {
+                this.drawGameObject(position, GAME_CONSTANTS.RENDER.STAR_COLOR, '⭐');
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+            }
+        }
+
+        // 輸入管理器
+        class InputManager {
+            constructor() {
+                this.eventEmitter = Utils.createEventEmitter();
+                this.isEnabled = true;
+                this.lastInputTime = 0;
+                this.inputCooldown = 150;
+                
+                this.setupKeyboardListeners();
+                this.setupTouchListeners();
+                this.setupMobileControls();
+            }
+
+            setupKeyboardListeners() {
+                document.addEventListener('keydown', (event) => {
+                    if (!this.isEnabled) return;
+                    
+                    const direction = KEY_MAPPING[event.code];
+                    if (direction) {
+                        event.preventDefault();
+                        this.handleInput(direction);
+                        return;
+                    }
+
+                    const specialAction = SPECIAL_KEYS[event.code];
+                    if (specialAction) {
+                        event.preventDefault();
+                        this.handleSpecialInput(specialAction);
+                        return;
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) {
+                        event.preventDefault();
+                    }
+                });
+            }
+
+            setupTouchListeners() {
+                let touchStartX = 0, touchStartY = 0;
+                let touchStartTime = 0;
+                const minSwipeDistance = Utils.isMobile() ? 20 : 30; // 手機上降低最小滑動距離
+                const maxTapTime = 200; // 最大點擊時間
+                const canvas = document.getElementById('gameCanvas');
+                if (!canvas) return;
+
+                // 防止雙擊縮放
+                let lastTouchEnd = 0;
+                canvas.addEventListener('touchend', (event) => {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+
+                canvas.addEventListener('touchstart', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const touch = event.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    touchStartTime = Date.now();
+                }, { passive: false });
+
+                canvas.addEventListener('touchend', (event) => {
+                    if (!this.isEnabled) return;
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const touch = event.changedTouches[0];
+                    const touchEndX = touch.clientX;
+                    const touchEndY = touch.clientY;
+                    const touchEndTime = Date.now();
+                    const touchDuration = touchEndTime - touchStartTime;
+
+                    // 如果是快速點擊，可能是想開始遊戲
+                    if (touchDuration < maxTapTime) {
+                        const distance = Math.sqrt(
+                            Math.pow(touchEndX - touchStartX, 2) + 
+                            Math.pow(touchEndY - touchStartY, 2)
+                        );
+                        
+                        if (distance < 10) {
+                            // 這是一個點擊，不是滑動
+                            this.eventEmitter.emit('canvasTap');
+                            return;
+                        }
+                    }
+
+                    const direction = this.getDirectionFromSwipe(
+                        touchStartX, touchStartY, touchEndX, touchEndY, minSwipeDistance
+                    );
+
+                    if (direction) {
+                        this.handleInput(direction);
+                    }
+                }, { passive: false });
+
+                canvas.addEventListener('touchmove', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }, { passive: false });
+
+                // 防止頁面滾動
+                document.addEventListener('touchmove', (event) => {
+                    if (event.target === canvas) {
+                        event.preventDefault();
+                    }
+                }, { passive: false });
+            }
+
+            setupMobileControls() {
+                const directionButtons = document.querySelectorAll('.direction-btn');
+                
+                directionButtons.forEach(button => {
+                    const direction = button.getAttribute('data-direction');
+                    
+                    // 觸摸開始事件
+                    button.addEventListener('touchstart', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        if (this.isEnabled && direction) {
+                            // 添加視覺反饋
+                            button.style.transform = 'scale(0.9)';
+                            button.style.backgroundColor = 'rgba(41, 128, 185, 0.9)';
+                            
+                            // 觸覺反饋（如果支援）
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                            
+                            this.handleInput(direction);
+                        }
+                    }, { passive: false });
+
+                    // 觸摸結束事件
+                    button.addEventListener('touchend', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // 恢復視覺狀態
+                        button.style.transform = '';
+                        button.style.backgroundColor = '';
+                    }, { passive: false });
+
+                    // 觸摸取消事件
+                    button.addEventListener('touchcancel', (event) => {
+                        event.preventDefault();
+                        
+                        // 恢復視覺狀態
+                        button.style.transform = '';
+                        button.style.backgroundColor = '';
+                    }, { passive: false });
+
+                    // 點擊事件（桌面瀏覽器備用）
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (this.isEnabled && direction && !Utils.isMobile()) {
+                            this.handleInput(direction);
+                        }
+                    });
+                });
+            }
+
+            getDirectionFromSwipe(startX, startY, endX, endY, minDistance) {
+                const deltaX = endX - startX;
+                const deltaY = endY - startY;
+                const absDeltaX = Math.abs(deltaX);
+                const absDeltaY = Math.abs(deltaY);
+
+                if (Math.max(absDeltaX, absDeltaY) < minDistance) {
+                    return null;
+                }
+
+                if (absDeltaX > absDeltaY) {
+                    return deltaX > 0 ? GAME_CONSTANTS.DIRECTION.RIGHT : GAME_CONSTANTS.DIRECTION.LEFT;
+                } else {
+                    return deltaY > 0 ? GAME_CONSTANTS.DIRECTION.DOWN : GAME_CONSTANTS.DIRECTION.UP;
+                }
+            }
+
+            handleInput(direction) {
+                const currentTime = Date.now();
+                
+                if (currentTime - this.lastInputTime < this.inputCooldown) {
+                    return;
+                }
+
+                this.lastInputTime = currentTime;
+                this.eventEmitter.emit('input', direction);
+            }
+
+            handleSpecialInput(action) {
+                const currentTime = Date.now();
+                
+                if (currentTime - this.lastInputTime < 100) {
+                    return;
+                }
+
+                this.lastInputTime = currentTime;
+                this.eventEmitter.emit('specialInput', action);
+            }
+
+            enable() { this.isEnabled = true; }
+            disable() { this.isEnabled = false; }
+            on(event, callback) { this.eventEmitter.on(event, callback); }
+            off(event, callback) { this.eventEmitter.off(event, callback); }
+        }
+
+        // 遊戲引擎
+        class GameEngine {
+            constructor() {
+                this.canvas = null;
+                this.ctx = null;
+                this.gameState = this.createInitialGameState();
+                this.eventEmitter = Utils.createEventEmitter();
+                
+                this.inputManager = null;
+                this.mazeRenderer = null;
+                this.levelManager = null;
+                this.player = null;
+                
+                this.lastFrameTime = 0;
+                this.gameLoopId = null;
+                this.isRunning = false;
+                
+                this.initializeCanvas();
+            }
+
+            createInitialGameState() {
+                return {
+                    currentLevel: 1,
+                    totalLevels: GAME_CONSTANTS.GAME.TOTAL_LEVELS,
+                    player: { x: 0, y: 0 },
+                    star: { x: 0, y: 0 },
+                    gameStatus: GAME_CONSTANTS.GAME_STATUS.LOADING,
+                    collectedStars: 0,
+                    startTime: null,
+                    levelStartTime: null,
+                    currentLevelData: null
+                };
+            }
+
+            initializeCanvas() {
+                this.canvas = document.getElementById('gameCanvas');
+                if (!this.canvas) {
+                    throw new Error('找不到遊戲 Canvas 元素');
+                }
+
+                this.ctx = this.canvas.getContext('2d');
+                if (!this.ctx) {
+                    throw new Error('無法獲取 Canvas 2D 上下文');
+                }
+
+                this.resizeCanvas();
+                
+                // 監聽視窗大小變化和方向變化
+                window.addEventListener('resize', Utils.debounce(() => {
+                    this.resizeCanvas();
+                }, 250));
+                
+                // 監聽螢幕方向變化（手機）
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        this.resizeCanvas();
+                    }, 500);
+                });
+            }
+
+            resizeCanvas() {
+                // 獲取真實的硬體螢幕尺寸
+                const screenWidth = window.screen.width || window.innerWidth;
+                const screenHeight = window.screen.height || window.innerHeight;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                // 使用實際可見區域
+                const actualWidth = Math.max(viewportWidth, screenWidth);
+                const actualHeight = Math.max(viewportHeight, screenHeight);
+                
+                // 動態計算UI元素的實際高度
+                const header = document.querySelector('.game-header');
+                const controls = document.querySelector('.game-controls');
+                const mobileControls = document.querySelector('.mobile-controls');
+                
+                let uiHeight = 0;
+                if (header) uiHeight += header.offsetHeight || 60;
+                if (controls) uiHeight += controls.offsetHeight || 40;
+                if (mobileControls && mobileControls.style.display !== 'none') {
+                    uiHeight += mobileControls.offsetHeight || 0;
+                }
+                
+                // 計算可用空間 - 硬體全螢幕
+                let availableWidth = actualWidth - 4; // 極小邊距
+                let availableHeight = actualHeight - uiHeight - 6; // 動態減去實際UI高度
+                
+                // 手機特殊處理
+                if (Utils.isMobile()) {
+                    availableWidth = actualWidth - 2;
+                    
+                    // 橫屏模式
+                    if (actualWidth > actualHeight) {
+                        availableHeight = actualHeight - uiHeight - 3;
+                    } else {
+                        // 直屏模式
+                        availableHeight = actualHeight - uiHeight - 4;
+                    }
+                    
+                    // iOS 特殊處理 - 考慮安全區域
+                    if (Utils.isIOS()) {
+                        const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top')) || 0;
+                        const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom')) || 0;
+                        availableHeight -= (safeAreaTop + safeAreaBottom + 10);
+                    }
+                }
+                
+                // 使用最大可用空間
+                const size = Math.max(150, Math.min(availableWidth, availableHeight));
+                
+                // 考慮設備像素比例以獲得最佳清晰度
+                const pixelRatio = Utils.getDevicePixelRatio();
+                const displaySize = size;
+                const actualSize = size * pixelRatio;
+                
+                this.canvas.width = actualSize;
+                this.canvas.height = actualSize;
+                this.canvas.style.width = displaySize + 'px';
+                this.canvas.style.height = displaySize + 'px';
+                
+                // 調整 Canvas 上下文的縮放
+                this.ctx.scale(pixelRatio, pixelRatio);
+                
+                if (this.mazeRenderer) {
+                    this.mazeRenderer.updateCanvasSize(displaySize, displaySize);
+                }
+                
+                // 強制重新渲染
+                if (this.gameState && this.gameState.currentLevelData) {
+                    this.render();
+                }
+            }
+
+            async initialize() {
+                try {
+                    this.inputManager = new InputManager();
+                    this.mazeRenderer = new MazeRenderer(this.canvas, this.ctx);
+                    this.levelManager = new LevelManager();
+                    this.player = new Player();
+                    
+                    this.setupEventListeners();
+                    this.loadLevel(1);
+                    
+                    this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.READY;
+                    this.showStartHint();
+                    
+                    this.eventEmitter.emit('gameInitialized');
+                    return true;
+                    
+                } catch (error) {
+                    console.error('遊戲初始化失敗:', error);
+                    this.eventEmitter.emit('gameError', error);
+                    return false;
+                }
+            }
+
+            setupEventListeners() {
+                this.inputManager.on('input', (direction) => {
+                    this.handleInput(direction);
+                });
+
+                this.inputManager.on('specialInput', (action) => {
+                    this.handleSpecialInput(action);
+                });
+
+                // 監聽 Canvas 點擊事件（手機用戶可以點擊開始遊戲）
+                this.inputManager.on('canvasTap', () => {
+                    if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.READY) {
+                        this.handleStartGame();
+                    }
+                });
+
+                this.setupUIControls();
+            }
+
+            setupUIControls() {
+                const startBtn = document.getElementById('startBtn');
+                const restartBtn = document.getElementById('restartBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+
+                if (startBtn) {
+                    startBtn.addEventListener('click', () => this.handleStartGame());
+                }
+
+                if (restartBtn) {
+                    restartBtn.addEventListener('click', () => this.restartLevel());
+                }
+
+                if (pauseBtn) {
+                    pauseBtn.addEventListener('click', () => this.togglePause());
+                }
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.lastFrameTime = performance.now();
+                this.gameLoop();
+                
+                this.eventEmitter.emit('gameStarted');
+            }
+
+            gameLoop(currentTime = performance.now()) {
+                if (!this.isRunning) return;
+
+                const deltaTime = currentTime - this.lastFrameTime;
+                this.lastFrameTime = currentTime;
+
+                this.update(deltaTime);
+                this.render();
+
+                this.gameLoopId = requestAnimationFrame((time) => this.gameLoop(time));
+            }
+
+            update(deltaTime) {
+                // 檢查碰撞
+                if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.PLAYING) {
+                    const playerPos = this.player.getPosition();
+                    
+                    // 檢查是否到達星星
+                    if (Utils.positionsEqual(playerPos, this.gameState.star)) {
+                        this.handleStarCollected();
+                        return;
+                    }
+                }
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.READY) {
+                    this.renderStartScreen();
+                } else if (this.gameState.currentLevelData) {
+                    this.renderGame();
+                }
+            }
+
+            renderStartScreen() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                // 根據 Canvas 大小調整字體
+                const scale = Math.min(canvas.width, canvas.height) / 600;
+                
+                ctx.font = `bold ${Math.max(16, 32 * scale)}px Arial`;
+                ctx.fillText('🥕 迷宮遊戲', centerX, centerY - 80 * scale);
+                
+                ctx.font = `${Math.max(12, 20 * scale)}px Arial`;
+                ctx.fillStyle = '#3498db';
+                ctx.fillText('菜頭大冒險', centerX, centerY - 40 * scale);
+                
+                const time = Date.now();
+                const alpha = (Math.sin(time * 0.005) + 1) / 2;
+                ctx.fillStyle = `rgba(52, 152, 219, ${alpha})`;
+                ctx.font = `bold ${Math.max(14, 24 * scale)}px Arial`;
+                
+                // 根據設備類型顯示不同的開始提示
+                if (Utils.isMobile()) {
+                    ctx.fillText('點擊螢幕開始遊戲', centerX, centerY + 20 * scale);
+                } else {
+                    ctx.fillText('按 空白鍵 開始遊戲', centerX, centerY + 20 * scale);
+                }
+                
+                ctx.fillStyle = '#ecf0f1';
+                ctx.font = `${Math.max(10, 16 * scale)}px Arial`;
+                
+                if (Utils.isMobile()) {
+                    ctx.fillText('滑動螢幕或使用方向鍵移動', centerX, centerY + 60 * scale);
+                } else {
+                    ctx.fillText('使用方向鍵或 WASD 移動', centerX, centerY + 60 * scale);
+                }
+                
+                ctx.fillText('收集所有星星！', centerX, centerY + 85 * scale);
+                
+                ctx.fillStyle = '#f39c12';
+                ctx.font = `${Math.max(8, 14 * scale)}px Arial`;
+                ctx.fillText(`關卡 ${this.gameState.currentLevel} / ${this.gameState.totalLevels}`, centerX, centerY + 120 * scale);
+            }
+
+            renderGame() {
+                const levelData = this.gameState.currentLevelData;
+                
+                // 繪製迷宮
+                this.mazeRenderer.currentMaze = levelData.maze;
+                this.mazeRenderer.drawMaze(levelData.maze);
+                
+                // 繪製遊戲物件
+                this.mazeRenderer.drawStar(this.gameState.star);
+                this.mazeRenderer.drawPlayer(this.player.getPosition());
+                
+                // 繪製暫停提示
+                if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.PAUSED) {
+                    this.renderPauseScreen();
+                }
+            }
+
+            renderPauseScreen() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // 半透明覆蓋
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 根據 Canvas 大小調整字體
+                const scale = Math.min(canvas.width, canvas.height) / 600;
+                
+                // 暫停文字
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = `bold ${Math.max(24, 48 * scale)}px Arial`;
+                ctx.fillText('暫停', canvas.width / 2, canvas.height / 2 - 20 * scale);
+                
+                ctx.font = `${Math.max(12, 20 * scale)}px Arial`;
+                ctx.fillStyle = '#3498db';
+                ctx.fillText('按 空白鍵 繼續', canvas.width / 2, canvas.height / 2 + 30 * scale);
+            }
+
+            handleInput(direction) {
+                if (this.gameState.gameStatus !== GAME_CONSTANTS.GAME_STATUS.PLAYING) {
+                    return;
+                }
+                
+                const levelData = this.gameState.currentLevelData;
+                if (levelData) {
+                    this.player.move(direction, levelData.maze);
+                }
+            }
+
+            handleSpecialInput(action) {
+                switch (action) {
+                    case 'start':
+                        this.handleStartGame();
+                        break;
+                    case 'pause':
+                        this.togglePause();
+                        break;
+                }
+            }
+
+            handleStartGame() {
+                if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.READY) {
+                    this.startGame();
+                } else if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.PAUSED) {
+                    this.resume();
+                }
+            }
+
+            startGame() {
+                this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.PLAYING;
+                this.gameState.startTime = Date.now();
+                this.gameState.levelStartTime = Date.now();
+                
+                this.hideStartHint();
+                
+                console.log('遊戲開始！');
+                this.eventEmitter.emit('gameActuallyStarted');
+            }
+
+
+
+            handleStarCollected() {
+                console.log('收集到星星！');
+                this.gameState.collectedStars++;
+                this.updateUI();
+                
+                if (this.gameState.currentLevel < this.gameState.totalLevels) {
+                    // 進入下一關
+                    this.loadLevel(this.gameState.currentLevel + 1);
+                } else {
+                    // 遊戲完成
+                    this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.GAME_COMPLETE;
+                    this.renderGameComplete();
+                }
+            }
+
+            renderGameComplete() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 根據 Canvas 大小調整字體
+                const scale = Math.min(canvas.width, canvas.height) / 600;
+                
+                ctx.fillStyle = '#00FF00';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = `bold ${Math.max(18, 36 * scale)}px Arial`;
+                ctx.fillText('🎄 聖誕快樂！ 🎄', canvas.width / 2, canvas.height / 2 - 40 * scale);
+                
+                ctx.fillStyle = '#FFD700';
+                ctx.font = `${Math.max(14, 24 * scale)}px Arial`;
+                ctx.fillText('恭喜完成所有關卡！', canvas.width / 2, canvas.height / 2 + 20 * scale);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `${Math.max(12, 18 * scale)}px Arial`;
+                ctx.fillText(`收集星星: ${this.gameState.collectedStars} ⭐`, canvas.width / 2, canvas.height / 2 + 60 * scale);
+            }
+
+            showStartHint() {
+                const startHint = document.getElementById('startHint');
+                const startBtn = document.getElementById('startBtn');
+                
+                if (startHint) {
+                    startHint.style.display = 'block';
+                }
+                
+                if (startBtn && Utils.isMobile()) {
+                    startBtn.style.display = 'inline-block';
+                }
+            }
+
+            hideStartHint() {
+                const startHint = document.getElementById('startHint');
+                const startBtn = document.getElementById('startBtn');
+                
+                if (startHint) {
+                    startHint.style.display = 'none';
+                }
+                
+                if (startBtn) {
+                    startBtn.style.display = 'none';
+                }
+            }
+
+            togglePause() {
+                if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.PLAYING) {
+                    this.pause();
+                } else if (this.gameState.gameStatus === GAME_CONSTANTS.GAME_STATUS.PAUSED) {
+                    this.resume();
+                }
+            }
+
+            pause() {
+                this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.PAUSED;
+                this.inputManager.disable();
+                this.eventEmitter.emit('gamePaused');
+            }
+
+            resume() {
+                this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.PLAYING;
+                this.inputManager.enable();
+                this.eventEmitter.emit('gameResumed');
+            }
+
+            restartLevel() {
+                if (this.gameState.currentLevelData) {
+                    this.player.resetToStart();
+                    this.gameState.gameStatus = GAME_CONSTANTS.GAME_STATUS.PLAYING;
+                    this.gameState.levelStartTime = Date.now();
+                }
+            }
+
+            updateUI() {
+                const levelElement = document.getElementById('currentLevel');
+                const starsElement = document.getElementById('collectedStars');
+
+                if (levelElement) {
+                    levelElement.textContent = this.gameState.currentLevel;
+                }
+
+                if (starsElement) {
+                    starsElement.textContent = this.gameState.collectedStars;
+                }
+            }
+
+            loadLevel(levelNumber) {
+                try {
+                    const levelData = this.levelManager.loadLevel(levelNumber);
+                    
+                    this.gameState.currentLevel = levelNumber;
+                    this.gameState.levelStartTime = Date.now();
+                    this.gameState.currentLevelData = levelData;
+                    
+                    this.player.setStartPosition(levelData.playerStart.x, levelData.playerStart.y);
+                    
+                    this.gameState.player = { ...levelData.playerStart };
+                    this.gameState.star = { ...levelData.starPosition };
+                    
+                    this.updateUI();
+                    
+                    console.log(`關卡 ${levelNumber} 載入成功`);
+                    this.eventEmitter.emit('levelLoaded', levelData);
+                    
+                    return levelData;
+                    
+                } catch (error) {
+                    console.error(`載入關卡 ${levelNumber} 失敗:`, error);
+                    throw error;
+                }
+            }
+
+            on(event, callback) { this.eventEmitter.on(event, callback); }
+            off(event, callback) { this.eventEmitter.off(event, callback); }
+        }
+
+        // 主程式
+        class MazeGame {
+            constructor() {
+                this.gameEngine = null;
+                this.loadingScreen = null;
+                this.isInitialized = false;
+            }
+
+            async init() {
+                try {
+                    this.loadingScreen = document.getElementById('loadingScreen');
+                    this.showLoadingScreen();
+
+                    this.gameEngine = new GameEngine();
+                    this.setupEventListeners();
+                    
+                    const success = await this.gameEngine.initialize();
+                    
+                    if (success) {
+                        this.hideLoadingScreen();
+                        this.gameEngine.start();
+                        this.isInitialized = true;
+                        console.log('迷宮遊戲初始化成功！按空白鍵開始遊戲。');
+                    } else {
+                        throw new Error('遊戲初始化失敗');
+                    }
+                    
+                } catch (error) {
+                    console.error('遊戲啟動失敗:', error);
+                    this.showError('遊戲載入失敗，請重新整理頁面再試');
+                }
+            }
+
+            setupEventListeners() {
+                this.gameEngine.on('gameInitialized', () => {
+                    console.log('遊戲系統初始化完成');
+                });
+
+                this.gameEngine.on('gameStarted', () => {
+                    console.log('遊戲系統啟動完成，等待玩家開始');
+                    this.gameEngine.updateUI();
+                });
+
+                this.gameEngine.on('gameActuallyStarted', () => {
+                    console.log('遊戲正式開始！');
+                });
+
+                this.gameEngine.on('gameError', (error) => {
+                    console.error('遊戲錯誤:', error);
+                    this.showError('遊戲發生錯誤: ' + error.message);
+                });
+
+                document.addEventListener('visibilitychange', () => {
+                    if (this.isInitialized && document.hidden) {
+                        this.gameEngine.pause();
+                    }
+                });
+
+                window.addEventListener('beforeunload', () => {
+                    if (this.gameEngine) {
+                        this.gameEngine.stop();
+                    }
+                });
+            }
+
+            showLoadingScreen() {
+                if (this.loadingScreen) {
+                    this.loadingScreen.style.display = 'flex';
+                }
+            }
+
+            hideLoadingScreen() {
+                if (this.loadingScreen) {
+                    this.loadingScreen.style.display = 'none';
+                }
+            }
+
+            showError(message) {
+                if (this.loadingScreen) {
+                    this.loadingScreen.innerHTML = `
+                        <div style="text-align: center; color: #e74c3c;">
+                            <h2>❌ 錯誤</h2>
+                            <p>${message}</p>
+                            <button onclick="location.reload()" style="
+                                background: #3498db;
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                margin-top: 15px;
+                            ">重新載入</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 手機特定優化 - 硬體全螢幕支援
+        function setupMobileOptimizations() {
+            // 防止 iOS Safari 的橡皮筋效果
+            document.addEventListener('touchmove', function(e) {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // 防止雙擊縮放和多點觸控縮放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // 防止手勢縮放
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+
+            // 硬體全螢幕視窗高度修正
+            const setViewportDimensions = () => {
+                const vh = window.innerHeight * 0.01;
+                const vw = window.innerWidth * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                document.documentElement.style.setProperty('--vw', `${vw}px`);
+                
+                // 設定安全區域變數
+                const computedStyle = getComputedStyle(document.documentElement);
+                const safeAreaTop = computedStyle.getPropertyValue('--safe-area-inset-top') || '0px';
+                const safeAreaRight = computedStyle.getPropertyValue('--safe-area-inset-right') || '0px';
+                const safeAreaBottom = computedStyle.getPropertyValue('--safe-area-inset-bottom') || '0px';
+                const safeAreaLeft = computedStyle.getPropertyValue('--safe-area-inset-left') || '0px';
+                
+                document.documentElement.style.setProperty('--safe-area-inset-top', safeAreaTop);
+                document.documentElement.style.setProperty('--safe-area-inset-right', safeAreaRight);
+                document.documentElement.style.setProperty('--safe-area-inset-bottom', safeAreaBottom);
+                document.documentElement.style.setProperty('--safe-area-inset-left', safeAreaLeft);
+            };
+            
+            setViewportDimensions();
+            
+            // 監聽各種尺寸變化事件
+            window.addEventListener('resize', Utils.debounce(setViewportDimensions, 100));
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    setViewportDimensions();
+                    if (mazeGame && mazeGame.gameEngine) {
+                        mazeGame.gameEngine.resizeCanvas();
+                    }
+                }, 300);
+            });
+
+            // 監聽全螢幕變化
+            document.addEventListener('fullscreenchange', () => {
+                setTimeout(() => {
+                    setViewportDimensions();
+                    if (mazeGame && mazeGame.gameEngine) {
+                        mazeGame.gameEngine.resizeCanvas();
+                    }
+                }, 100);
+            });
+
+            // iOS 特定優化
+            if (Utils.isIOS()) {
+                // 隱藏地址欄
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                    }, 100);
+                });
+                
+                // 處理 iOS 鍵盤彈出
+                window.addEventListener('focusin', () => {
+                    setTimeout(setViewportDimensions, 300);
+                });
+                
+                window.addEventListener('focusout', () => {
+                    setTimeout(setViewportDimensions, 300);
+                });
+            }
+
+            // Android 特定優化
+            if (Utils.isAndroid()) {
+                // 防止地址欄隱藏時的佈局跳動
+                let lastHeight = window.innerHeight;
+                window.addEventListener('resize', Utils.debounce(() => {
+                    const currentHeight = window.innerHeight;
+                    if (Math.abs(currentHeight - lastHeight) > 100) {
+                        setViewportDimensions();
+                        if (mazeGame && mazeGame.gameEngine) {
+                            mazeGame.gameEngine.resizeCanvas();
+                        }
+                    }
+                    lastHeight = currentHeight;
+                }, 100));
+            }
+        }
+
+        // 全螢幕API支援
+        function requestFullscreen() {
+            const element = document.documentElement;
+            
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        // 啟動遊戲
+        let mazeGame = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 設定手機優化
+                if (Utils.isMobile()) {
+                    setupMobileOptimizations();
+                }
+
+                // 嘗試進入全螢幕模式（需要用戶互動）
+                document.addEventListener('click', () => {
+                    if (!document.fullscreenElement && Utils.isMobile()) {
+                        requestFullscreen();
+                    }
+                }, { once: true });
+
+                mazeGame = new MazeGame();
+                await mazeGame.init();
+            } catch (error) {
+                console.error('無法啟動遊戲:', error);
+            }
+        });
+
+        window.MazeGame = MazeGame;
+        window.mazeGame = mazeGame;
+    </script>
+</body>
+</html>
