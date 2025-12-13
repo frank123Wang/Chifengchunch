@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FPS射擊遊戲">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1e3c72">
+    <meta name="format-detection" content="telephone=no">
+    <title>手機 FPS 遊戲 - 10 關挑戰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        :root {
+            --vh: 1vh;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            overflow: hidden;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100); /* 使用 CSS 變數支援動態高度 */
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+        }
+
+        /* iOS 特定樣式 */
+        body.ios {
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Android 特定樣式 */
+        body.android {
+            overscroll-behavior-y: contain;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* 主選單 */
+        #mainMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .menu-title {
+            font-size: 3em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            min-width: 200px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            outline: none;
+            border: 2px solid transparent;
+            font-family: inherit;
+        }
+
+        .menu-button:hover, .menu-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        /* 關卡選單 */
+        #levelSelect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px;
+        }
+
+        .level-button {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            min-width: 80px;
+            min-height: 80px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            outline: none;
+            border: 2px solid transparent;
+            font-family: inherit;
+        }
+
+        .level-button:hover, .level-button:active {
+            transform: scale(1.05);
+        }
+
+        .level-button.completed {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        /* 遊戲畫面 */
+        #gameScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #87CEEB;
+            display: none;
+            overflow: hidden;
+        }
+
+        /* 準心 */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .crosshair-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .crosshair-horizontal {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .crosshair-vertical {
+            width: 2px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* UI 面板 */
+        #gameUI {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .ui-panel {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            pointer-events: auto;
+        }
+
+        #topUI {
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        #bottomUI {
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+        }
+
+        /* 目標物件 */
+        .target {
+            position: absolute;
+            cursor: crosshair;
+            transition: all 0.1s ease;
+        }
+
+        .target:hover {
+            transform: scale(1.1);
+        }
+
+        /* 特效 */
+        .explosion {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff6b35, #f7931e, #ffcc02);
+            border-radius: 50%;
+            animation: explode 0.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .feather {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: featherFall 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes featherFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(200px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 結果畫面 */
+        #resultScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .result-title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .result-stats {
+            font-size: 1.3em;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* 煙火動畫 */
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff6b35;
+            border-radius: 50%;
+            animation: firework 2s ease-out forwards;
+        }
+
+        @keyframes firework {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(20);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(40);
+                opacity: 0;
+            }
+        }
+
+        /* 相機畫面 */
+        #cameraView {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 響應式設計 */
+        @media (orientation: portrait) {
+            .menu-title {
+                font-size: 2.5em;
+            }
+            .level-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* iOS Safari 特殊處理 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+            #gameContainer {
+                height: -webkit-fill-available;
+            }
+        }
+
+        /* Android Chrome 特殊處理 */
+        @media screen and (max-width: 768px) {
+            .menu-button {
+                min-height: 48px; /* Android 最小觸控目標 */
+            }
+            .level-button {
+                min-height: 48px;
+                min-width: 48px;
+            }
+        }
+
+        /* 高 DPI 螢幕優化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .crosshair-line {
+                box-shadow: 0 0 3px rgba(0,0,0,0.8);
+            }
+        }
+
+        /* 安全區域支援 (iPhone X 系列) */
+        @supports (padding: max(0px)) {
+            #topUI {
+                padding-top: max(15px, env(safe-area-inset-top));
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+            }
+            #bottomUI {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+            }
+        }
+
+        /* 設定畫面 */
+        #settingsScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .setting-item {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 300px;
+        }
+
+        .setting-slider {
+            width: 150px;
+            height: 5px;
+            background: #bdc3c7;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        /* 狙擊鏡 */
+        #sniperScope {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            display: none;
+            z-index: 150;
+            pointer-events: none;
+        }
+
+        .scope-line {
+            position: absolute;
+            background: #fff;
+        }
+
+        .scope-horizontal {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+        }
+
+        .scope-vertical {
+            width: 1px;
+            height: 100%;
+            top: 0;
+            left: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- 主選單 -->
+        <div id="mainMenu">
+            <h1 class="menu-title">🎯 FPS 射擊遊戲</h1>
+            <button class="menu-button" id="startGameBtn">開始遊戲</button>
+            <button class="menu-button" id="settingsBtn">設定</button>
+            <button class="menu-button" id="levelSelectBtn">關卡選擇</button>
+        </div>
+
+        <!-- 關卡選單 -->
+        <div id="levelSelect">
+            <h2 class="menu-title">選擇關卡</h2>
+            <div class="level-grid">
+                <button class="level-button" data-level="1">第1關<br>練習射擊</button>
+                <button class="level-button" data-level="2">第2關<br>射氣球</button>
+                <button class="level-button" data-level="3">第3關<br>射鴿子</button>
+                <button class="level-button" data-level="4">第4關<br>移動標的</button>
+                <button class="level-button" data-level="5">第5關<br>射怪物</button>
+                <button class="level-button" data-level="6">第6關<br>射匪徒</button>
+                <button class="level-button" data-level="7">第7關<br>射殭屍</button>
+                <button class="level-button" data-level="8">第8關<br>狙擊模式</button>
+                <button class="level-button" data-level="9">第9關<br>射太空船</button>
+                <button class="level-button" data-level="10">第10關<br>相機模式</button>
+            </div>
+            <button class="menu-button" id="backToMainBtn">返回主選單</button>
+        </div>
+
+        <!-- 設定畫面 -->
+        <div id="settingsScreen">
+            <h2 class="menu-title">遊戲設定</h2>
+            <div class="setting-item">
+                <label>音效音量:</label>
+                <input type="range" class="setting-slider" id="soundVolume" min="0" max="100" value="50">
+            </div>
+            <div class="setting-item">
+                <label>靈敏度:</label>
+                <input type="range" class="setting-slider" id="sensitivity" min="1" max="10" value="5">
+            </div>
+            <button class="menu-button" id="backToMainFromSettings">返回主選單</button>
+        </div>
+
+        <!-- 遊戲畫面 -->
+        <div id="gameScreen">
+            <!-- 相機畫面 (第10關用) -->
+            <video id="cameraView" style="display: none;"></video>
+            
+            <!-- 準心 -->
+            <div id="crosshair">
+                <div class="crosshair-line crosshair-horizontal"></div>
+                <div class="crosshair-line crosshair-vertical"></div>
+            </div>
+
+            <!-- 狙擊鏡 (第8關用) -->
+            <div id="sniperScope">
+                <div class="scope-line scope-horizontal"></div>
+                <div class="scope-line scope-vertical"></div>
+            </div>
+
+            <!-- 遊戲 UI -->
+            <div id="gameUI">
+                <div id="topUI">
+                    <div>
+                        <div>關卡: <span id="currentLevel">1</span></div>
+                        <div>分數: <span id="score">0</span></div>
+                    </div>
+                    <div>
+                        <div>命中率: <span id="accuracy">100%</span></div>
+                        <div>時間: <span id="timer">00:00</span></div>
+                    </div>
+                    <div>
+                        <div>目標: <span id="targets">0</span></div>
+                        <div>血量: <span id="health">100</span></div>
+                    </div>
+                </div>
+                
+                <div id="bottomUI">
+                    <button class="menu-button" id="pauseBtn">暫停</button>
+                    <button class="menu-button" id="mainMenuBtn">主選單</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果畫面 -->
+        <div id="resultScreen">
+            <h2 class="result-title" id="resultTitle">關卡完成！</h2>
+            <div class="result-stats" id="resultStats">
+                <div>命中率: <span id="finalAccuracy">0%</span></div>
+                <div>完成時間: <span id="finalTime">00:00</span></div>
+                <div>最終分數: <span id="finalScore">0</span></div>
+            </div>
+            <button class="menu-button" id="nextLevelBtn">下一關</button>
+            <button class="menu-button" id="levelSelectFromResult">關卡選擇</button>
+            <button class="menu-button" id="mainMenuFromResult">主選單</button>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        let gameState = {
+            currentLevel: 1,
+            score: 0,
+            shots: 0,
+            hits: 0,
+            startTime: 0,
+            gameTime: 0,
+            targets: [],
+            isPlaying: false,
+            isPaused: false,
+            health: 100,
+            completedLevels: new Set(),
+            settings: {
+                soundVolume: 50,
+                sensitivity: 5
+            }
+        };
+
+        // 關卡配置
+        const levelConfigs = {
+            1: { // 練習射擊
+                name: "練習射擊",
+                background: "#87CEEB",
+                targetCount: 5,
+                timeLimit: 0,
+                targetType: "bullseye",
+                description: "射擊靜止的靶子"
+            },
+            2: { // 射氣球
+                name: "射氣球",
+                background: "linear-gradient(to bottom, #87CEEB, #98FB98)",
+                targetCount: 10,
+                timeLimit: 60,
+                targetType: "balloon",
+                description: "射破上升的氣球"
+            },
+            3: { // 射鴿子
+                name: "射鴿子",
+                background: "linear-gradient(to bottom, #87CEEB, #F0E68C)",
+                targetCount: 8,
+                timeLimit: 45,
+                targetType: "bird",
+                description: "射擊飛行的鴿子"
+            },
+            4: { // 移動標的
+                name: "移動標的",
+                background: "#DDA0DD",
+                targetCount: 20,
+                timeLimit: 90,
+                targetType: "moving",
+                description: "射擊移動的標的物"
+            },
+            5: { // 射怪物
+                name: "射怪物",
+                background: "#2F4F2F",
+                targetCount: 5,
+                timeLimit: 120,
+                targetType: "monster",
+                description: "射擊大型怪物"
+            },
+            6: { // 射匪徒
+                name: "射匪徒",
+                background: "#8B4513",
+                targetCount: 10,
+                timeLimit: 60,
+                targetType: "bandit",
+                description: "射擊匪徒，避開人質"
+            },
+            7: { // 射殭屍
+                name: "射殭屍",
+                background: "#1C1C1C",
+                targetCount: 10,
+                timeLimit: 90,
+                targetType: "zombie",
+                description: "射擊接近的殭屍"
+            },
+            8: { // 狙擊模式
+                name: "狙擊模式",
+                background: "#556B2F",
+                targetCount: 5,
+                timeLimit: 120,
+                targetType: "sniper",
+                description: "狙擊遠距離小目標"
+            },
+            9: { // 射太空船
+                name: "射太空船",
+                background: "radial-gradient(circle, #191970, #000000)",
+                targetCount: 8,
+                timeLimit: 90,
+                targetType: "spaceship",
+                description: "射擊瞬移太空船"
+            },
+            10: { // 相機模式
+                name: "相機模式",
+                background: "#000000",
+                targetCount: 5,
+                timeLimit: 0,
+                targetType: "camera",
+                description: "射擊相機畫面中的目標"
+            }
+        };
+
+        // 音效系統
+        const sounds = {
+            shoot: () => playSound(200, 0.1),
+            hit: () => playSound(400, 0.2),
+            explosion: () => playSound(100, 0.3),
+            complete: () => playSound(600, 0.5),
+            fail: () => playSound(150, 0.8)
+        };
+
+        // 音效系統 - iOS/Android 兼容
+        let audioContext = null;
+        let isAudioInitialized = false;
+
+        function initAudio() {
+            if (isAudioInitialized) return;
+            
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // iOS 需要用戶互動後才能播放音效
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                isAudioInitialized = true;
+            } catch (e) {
+                console.log('音效初始化失敗:', e);
+            }
+        }
+
+        function playSound(frequency, duration) {
+            if (gameState.settings.soundVolume === 0) return;
+            
+            if (!isAudioInitialized) {
+                initAudio();
+            }
+            
+            if (!audioContext) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'square';
+                
+                gainNode.gain.setValueAtTime(gameState.settings.soundVolume / 100 * 0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.log('音效播放失敗:', e);
+            }
+        }
+
+        // 顯示主選單
+        function showMainMenu() {
+            console.log('顯示主選單');
+            document.getElementById('mainMenu').style.display = 'flex';
+            document.getElementById('levelSelect').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'none';
+            gameState.isPlaying = false;
+        }
+
+        // 顯示關卡選單
+        function showLevelSelect() {
+            console.log('顯示關卡選單');
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('levelSelect').style.display = 'flex';
+            updateLevelButtons();
+        }
+
+        // 顯示設定畫面
+        function showSettings() {
+            console.log('顯示設定畫面');
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'flex';
+            
+            // 載入設定
+            document.getElementById('soundVolume').value = gameState.settings.soundVolume;
+            document.getElementById('sensitivity').value = gameState.settings.sensitivity;
+            
+            // 設定事件監聽
+            document.getElementById('soundVolume').oninput = (e) => {
+                gameState.settings.soundVolume = parseInt(e.target.value);
+            };
+            
+            document.getElementById('sensitivity').oninput = (e) => {
+                gameState.settings.sensitivity = parseInt(e.target.value);
+            };
+        }
+
+        // 更新關卡按鈕狀態
+        function updateLevelButtons() {
+            const buttons = document.querySelectorAll('.level-button');
+            buttons.forEach((button, index) => {
+                if (gameState.completedLevels.has(index + 1)) {
+                    button.classList.add('completed');
+                }
+            });
+        }
+
+        // 開始關卡
+        function startLevel(level) {
+            gameState.currentLevel = level;
+            gameState.score = 0;
+            gameState.shots = 0;
+            gameState.hits = 0;
+            gameState.health = 100;
+            gameState.startTime = Date.now();
+            gameState.isPlaying = true;
+            gameState.isPaused = false;
+            gameState.targets = [];
+
+            // 隱藏選單，顯示遊戲畫面
+            document.getElementById('levelSelect').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // 設定背景
+            const config = levelConfigs[level];
+            document.getElementById('gameScreen').style.background = config.background;
+            
+            // 更新UI
+            document.getElementById('currentLevel').textContent = level;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('targets').textContent = config.targetCount;
+            document.getElementById('health').textContent = gameState.health;
+            
+            // 特殊關卡設定
+            if (level === 8) {
+                document.getElementById('sniperScope').style.display = 'block';
+                document.getElementById('crosshair').style.display = 'none';
+            } else {
+                document.getElementById('sniperScope').style.display = 'none';
+                document.getElementById('crosshair').style.display = 'block';
+            }
+            
+            if (level === 10) {
+                initCamera();
+            } else {
+                document.getElementById('cameraView').style.display = 'none';
+            }
+            
+            // 開始生成目標
+            generateTargets(level);
+            
+            // 開始計時
+            startTimer();
+        }
+
+        // 生成目標物
+        function generateTargets(level) {
+            const config = levelConfigs[level];
+            const gameScreen = document.getElementById('gameScreen');
+            
+            // 清除現有目標
+            document.querySelectorAll('.target').forEach(target => target.remove());
+            
+            for (let i = 0; i < config.targetCount; i++) {
+                setTimeout(() => {
+                    if (!gameState.isPlaying) return;
+                    createTarget(config.targetType, i);
+                }, i * 1000);
+            }
+        }
+
+        // 創建目標
+        function createTarget(type, index) {
+            const gameScreen = document.getElementById('gameScreen');
+            const target = document.createElement('div');
+            target.className = 'target';
+            target.dataset.type = type;
+            target.dataset.index = index;
+            
+            // 隨機位置
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 200) + 100;
+            
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
+            
+            // 根據類型設定外觀和行為
+            switch (type) {
+                case 'bullseye':
+                    target.innerHTML = '🎯';
+                    target.style.fontSize = '60px';
+                    break;
+                    
+                case 'balloon':
+                    const colors = ['🔴', '🟡', '🔵', '🟢', '🟣'];
+                    target.innerHTML = colors[Math.floor(Math.random() * colors.length)];
+                    target.style.fontSize = '50px';
+                    animateBalloon(target);
+                    break;
+                    
+                case 'bird':
+                    target.innerHTML = '🕊️';
+                    target.style.fontSize = '40px';
+                    animateBird(target);
+                    break;
+                    
+                case 'moving':
+                    target.innerHTML = '🎯';
+                    target.style.fontSize = '40px';
+                    target.style.background = '#ff6b6b';
+                    target.style.borderRadius = '50%';
+                    target.style.width = '50px';
+                    target.style.height = '50px';
+                    animateMovingTarget(target);
+                    break;
+                    
+                case 'monster':
+                    target.innerHTML = '👾';
+                    target.style.fontSize = '80px';
+                    target.dataset.health = '3';
+                    animateMonster(target);
+                    break;
+                    
+                case 'bandit':
+                    if (Math.random() < 0.3) {
+                        target.innerHTML = '👨‍💼'; // 人質
+                        target.dataset.hostage = 'true';
+                    } else {
+                        target.innerHTML = '🔫'; // 匪徒
+                        target.dataset.hostage = 'false';
+                    }
+                    target.style.fontSize = '50px';
+                    animateBandit(target);
+                    break;
+                    
+                case 'zombie':
+                    target.innerHTML = '🧟';
+                    target.style.fontSize = '60px';
+                    animateZombie(target);
+                    break;
+                    
+                case 'sniper':
+                    target.innerHTML = '⚫';
+                    target.style.fontSize = '20px';
+                    target.style.background = '#ff0000';
+                    target.style.borderRadius = '50%';
+                    target.style.width = '20px';
+                    target.style.height = '20px';
+                    animateSniperTarget(target);
+                    break;
+                    
+                case 'spaceship':
+                    target.innerHTML = '🛸';
+                    target.style.fontSize = '50px';
+                    target.dataset.shield = '2';
+                    animateSpaceship(target);
+                    break;
+                    
+                case 'camera':
+                    target.innerHTML = '📷';
+                    target.style.fontSize = '50px';
+                    target.style.background = 'rgba(255,255,255,0.8)';
+                    target.style.borderRadius = '50%';
+                    target.style.padding = '10px';
+                    break;
+            }
+            
+            // 點擊事件
+            target.onclick = (e) => {
+                e.stopPropagation();
+                shootTarget(target);
+            };
+            
+            gameScreen.appendChild(target);
+            gameState.targets.push(target);
+        }
+
+        // 動畫函數
+        function animateBalloon(target) {
+            let y = parseFloat(target.style.top);
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                y -= 2;
+                target.style.top = y + 'px';
+                if (y > -100) {
+                    requestAnimationFrame(animate);
+                } else {
+                    target.remove();
+                }
+            };
+            animate();
+        }
+
+        function animateBird(target) {
+            let x = parseFloat(target.style.left);
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const speed = 3 + Math.random() * 2;
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                x += direction * speed;
+                target.style.left = x + 'px';
+                
+                if (x > -100 && x < window.innerWidth + 100) {
+                    requestAnimationFrame(animate);
+                } else {
+                    target.remove();
+                }
+            };
+            animate();
+        }
+
+        function animateMovingTarget(target) {
+            let x = parseFloat(target.style.left);
+            let y = parseFloat(target.style.top);
+            let dx = (Math.random() - 0.5) * 4;
+            let dy = (Math.random() - 0.5) * 4;
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                
+                x += dx;
+                y += dy;
+                
+                if (x <= 0 || x >= window.innerWidth - 50) dx = -dx;
+                if (y <= 100 || y >= window.innerHeight - 150) dy = -dy;
+                
+                target.style.left = x + 'px';
+                target.style.top = y + 'px';
+                
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        function animateMonster(target) {
+            let x = parseFloat(target.style.left);
+            const direction = x > window.innerWidth / 2 ? -1 : 1;
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                x += direction * 0.5;
+                target.style.left = x + 'px';
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        function animateBandit(target) {
+            let x = parseFloat(target.style.left);
+            let direction = Math.random() > 0.5 ? 1 : -1;
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                x += direction * 2;
+                
+                if (Math.random() < 0.02) direction = -direction;
+                
+                if (x <= 0) direction = 1;
+                if (x >= window.innerWidth - 50) direction = -1;
+                
+                target.style.left = x + 'px';
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        function animateZombie(target) {
+            let y = parseFloat(target.style.top);
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                y += 1;
+                target.style.top = y + 'px';
+                
+                if (y > window.innerHeight - 200) {
+                    // 殭屍到達玩家
+                    gameState.health -= 20;
+                    updateUI();
+                    target.remove();
+                    
+                    if (gameState.health <= 0) {
+                        endLevel(false);
+                    }
+                } else {
+                    requestAnimationFrame(animate);
+                }
+            };
+            animate();
+        }
+
+        function animateSniperTarget(target) {
+            let x = parseFloat(target.style.left);
+            let y = parseFloat(target.style.top);
+            let dx = (Math.random() - 0.5) * 6;
+            let dy = (Math.random() - 0.5) * 6;
+            
+            const animate = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                
+                x += dx;
+                y += dy;
+                
+                if (x <= 0 || x >= window.innerWidth - 20) dx = -dx;
+                if (y <= 100 || y >= window.innerHeight - 150) dy = -dy;
+                
+                target.style.left = x + 'px';
+                target.style.top = y + 'px';
+                
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        function animateSpaceship(target) {
+            const teleport = () => {
+                if (!gameState.isPlaying || !target.parentNode) return;
+                
+                const x = Math.random() * (window.innerWidth - 100);
+                const y = Math.random() * (window.innerHeight - 200) + 100;
+                
+                target.style.left = x + 'px';
+                target.style.top = y + 'px';
+                
+                setTimeout(teleport, 2000 + Math.random() * 3000);
+            };
+            
+            setTimeout(teleport, 1000);
+        }
+
+        // 射擊目標
+        function shootTarget(target) {
+            gameState.shots++;
+            sounds.shoot();
+            
+            const type = target.dataset.type;
+            let hit = false;
+            
+            // 特殊邏輯處理
+            switch (type) {
+                case 'bandit':
+                    if (target.dataset.hostage === 'true') {
+                        // 射到人質，立即失敗
+                        sounds.fail();
+                        endLevel(false, "射到人質！任務失敗！");
+                        return;
+                    }
+                    hit = true;
+                    break;
+                    
+                case 'monster':
+                    let health = parseInt(target.dataset.health);
+                    health--;
+                    target.dataset.health = health;
+                    
+                    if (health <= 0) {
+                        hit = true;
+                    } else {
+                        // 怪物受傷但未死亡
+                        target.style.filter = 'brightness(0.7)';
+                        sounds.hit();
+                        gameState.score += 10;
+                        updateUI();
+                        return;
+                    }
+                    break;
+                    
+                case 'spaceship':
+                    let shield = parseInt(target.dataset.shield);
+                    shield--;
+                    target.dataset.shield = shield;
+                    
+                    if (shield <= 0) {
+                        hit = true;
+                    } else {
+                        target.style.filter = 'brightness(0.5)';
+                        sounds.hit();
+                        gameState.score += 20;
+                        updateUI();
+                        return;
+                    }
+                    break;
+                    
+                case 'zombie':
+                    // 檢查是否爆頭（點擊位置在上半部）
+                    const rect = target.getBoundingClientRect();
+                    const clickY = event.clientY;
+                    const targetCenterY = rect.top + rect.height / 2;
+                    
+                    if (clickY < targetCenterY) {
+                        // 爆頭，一擊必殺
+                        hit = true;
+                        gameState.score += 100; // 爆頭加分
+                    } else {
+                        // 身體命中，需要多次
+                        let health = parseInt(target.dataset.health || '2');
+                        health--;
+                        target.dataset.health = health;
+                        
+                        if (health <= 0) {
+                            hit = true;
+                        } else {
+                            target.style.filter = 'brightness(0.7)';
+                            sounds.hit();
+                            gameState.score += 25;
+                            updateUI();
+                            return;
+                        }
+                    }
+                    break;
+                    
+                default:
+                    hit = true;
+                    break;
+            }
+            
+            if (hit) {
+                gameState.hits++;
+                sounds.hit();
+                
+                // 創建爆炸效果
+                createExplosion(target);
+                
+                // 特殊效果
+                if (type === 'bird') {
+                    createFeathers(target);
+                } else if (type === 'balloon') {
+                    sounds.explosion();
+                }
+                
+                // 計分
+                let points = 50;
+                if (type === 'sniper') points = 100;
+                if (type === 'spaceship') points = 150;
+                if (type === 'monster') points = 200;
+                
+                gameState.score += points;
+                
+                // 移除目標
+                target.remove();
+                
+                // 檢查是否完成關卡
+                checkLevelComplete();
+            }
+            
+            updateUI();
+        }
+
+        // 創建爆炸效果
+        function createExplosion(target) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            
+            const rect = target.getBoundingClientRect();
+            explosion.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+            explosion.style.top = (rect.top + rect.height / 2 - 30) + 'px';
+            
+            document.getElementById('gameScreen').appendChild(explosion);
+            
+            setTimeout(() => explosion.remove(), 500);
+        }
+
+        // 創建羽毛效果
+        function createFeathers(target) {
+            const rect = target.getBoundingClientRect();
+            
+            for (let i = 0; i < 8; i++) {
+                const feather = document.createElement('div');
+                feather.className = 'feather';
+                
+                feather.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                feather.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                feather.style.animationDelay = (Math.random() * 0.5) + 's';
+                
+                document.getElementById('gameScreen').appendChild(feather);
+                
+                setTimeout(() => feather.remove(), 2000);
+            }
+        }
+
+        // 檢查關卡完成
+        function checkLevelComplete() {
+            const remainingTargets = document.querySelectorAll('.target').length;
+            const config = levelConfigs[gameState.currentLevel];
+            
+            if (gameState.hits >= config.targetCount || remainingTargets === 0) {
+                endLevel(true);
+            }
+        }
+
+        // 結束關卡
+        function endLevel(success, message = null) {
+            gameState.isPlaying = false;
+            
+            // 計算統計
+            const accuracy = gameState.shots > 0 ? Math.round((gameState.hits / gameState.shots) * 100) : 0;
+            const timeElapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            
+            // 更新結果畫面
+            document.getElementById('resultTitle').textContent = message || (success ? '🎉 關卡完成！' : '❌ 關卡失敗');
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+            document.getElementById('finalTime').textContent = formatTime(timeElapsed);
+            document.getElementById('finalScore').textContent = gameState.score;
+            
+            if (success) {
+                gameState.completedLevels.add(gameState.currentLevel);
+                sounds.complete();
+                
+                // 檢查是否全部通關
+                if (gameState.completedLevels.size === 10) {
+                    showVictoryAnimation();
+                }
+            } else {
+                sounds.fail();
+            }
+            
+            // 顯示結果畫面
+            document.getElementById('resultScreen').style.display = 'flex';
+        }
+
+        // 勝利動畫
+        function showVictoryAnimation() {
+            document.getElementById('resultTitle').innerHTML = '🎉 恭喜通關！You Win！🎉';
+            
+            // 創建煙火效果
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createFirework();
+                }, i * 200);
+            }
+        }
+
+        // 創建煙火
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            
+            const colors = ['#ff6b35', '#f7931e', '#ffcc02', '#ff006e', '#8338ec'];
+            firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            firework.style.left = Math.random() * window.innerWidth + 'px';
+            firework.style.top = Math.random() * window.innerHeight + 'px';
+            
+            document.getElementById('resultScreen').appendChild(firework);
+            
+            setTimeout(() => firework.remove(), 2000);
+        }
+
+        // 下一關
+        function nextLevel() {
+            if (gameState.currentLevel < 10) {
+                startLevel(gameState.currentLevel + 1);
+            } else {
+                showLevelSelect();
+            }
+            document.getElementById('resultScreen').style.display = 'none';
+        }
+
+        // 暫停遊戲
+        function pauseGame() {
+            gameState.isPaused = !gameState.isPaused;
+            // 這裡可以添加暫停邏輯
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('health').textContent = gameState.health;
+            
+            const accuracy = gameState.shots > 0 ? Math.round((gameState.hits / gameState.shots) * 100) : 100;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        // 計時器
+        function startTimer() {
+            const updateTimer = () => {
+                if (!gameState.isPlaying) return;
+                
+                const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+                document.getElementById('timer').textContent = formatTime(elapsed);
+                
+                // 檢查時間限制
+                const config = levelConfigs[gameState.currentLevel];
+                if (config.timeLimit > 0 && elapsed >= config.timeLimit) {
+                    endLevel(false, "時間到！");
+                    return;
+                }
+                
+                setTimeout(updateTimer, 1000);
+            };
+            updateTimer();
+        }
+
+        // 格式化時間
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 相機初始化（第10關）- iOS/Android 兼容
+        async function initCamera() {
+            try {
+                // 檢查是否支援相機
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('不支援相機功能');
+                }
+
+                // iOS Safari 和 Android Chrome 的相機設定
+                const constraints = {
+                    video: {
+                        facingMode: 'environment', // 後置相機
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('cameraView');
+                
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                // iOS Safari 需要明確設定 playsinline
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                
+                await video.play();
+                
+                console.log('相機初始化成功');
+            } catch (err) {
+                console.log('相機初始化失敗:', err);
+                
+                // 提供文件選擇作為替代方案
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment'; // Android 相機捕獲
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const img = document.createElement('img');
+                            img.src = event.target.result;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            
+                            const video = document.getElementById('cameraView');
+                            video.style.display = 'none';
+                            video.parentNode.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                
+                // 自動觸發文件選擇
+                input.click();
+            }
+        }
+
+        // 觸控控制 - iOS/Android 優化
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouch = false;
+        let touchStartTime = 0;
+        let lastTouchTime = 0;
+
+        // 被動事件監聽器選項
+        const passiveOptions = { passive: false };
+        const passiveTrue = { passive: true };
+
+        document.getElementById('gameScreen').addEventListener('touchstart', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            // 初始化音效（iOS 需要用戶互動）
+            if (!isAudioInitialized) {
+                initAudio();
+            }
+            
+            isTouch = true;
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            
+            // 防止多點觸控
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, passiveOptions);
+
+        document.getElementById('gameScreen').addEventListener('touchmove', (e) => {
+            if (!gameState.isPlaying || !isTouch) return;
+            
+            // 防止頁面滾動
+            e.preventDefault();
+            
+            const deltaX = e.touches[0].clientX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+            
+            // 視角控制邏輯（簡化版）
+            const sensitivity = gameState.settings.sensitivity / 5;
+            const moveThreshold = 10; // 最小移動距離
+            
+            if (Math.abs(deltaX) > moveThreshold || Math.abs(deltaY) > moveThreshold) {
+                // 這裡可以實現準心移動或視角控制
+                // 目前作為示意
+            }
+        }, passiveOptions);
+
+        document.getElementById('gameScreen').addEventListener('touchend', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            const touchEndTime = Date.now();
+            const touchDuration = touchEndTime - touchStartTime;
+            
+            isTouch = false;
+            
+            // 防止快速連續點擊
+            if (touchEndTime - lastTouchTime < 100) {
+                return;
+            }
+            lastTouchTime = touchEndTime;
+            
+            // 檢查是否為點擊射擊（短時間觸控）
+            if (touchDuration < 500) {
+                const touch = e.changedTouches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (element && element.classList.contains('target')) {
+                    shootTarget(element);
+                } else {
+                    // 空射
+                    gameState.shots++;
+                    sounds.shoot();
+                    updateUI();
+                }
+            }
+        }, passiveTrue);
+
+        // 處理觸控取消（iOS Safari 特殊情況）
+        document.getElementById('gameScreen').addEventListener('touchcancel', (e) => {
+            isTouch = false;
+        }, passiveTrue);
+
+        // 鼠標控制（用於測試）
+        document.getElementById('gameScreen').addEventListener('click', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            const element = e.target;
+            if (element.classList.contains('target')) {
+                shootTarget(element);
+            } else {
+                // 空射
+                gameState.shots++;
+                sounds.shoot();
+                updateUI();
+            }
+        });
+
+        // 跨平台觸控優化
+        let lastTouchEnd = 0;
+        let preventZoom = false;
+
+        // 防止頁面滾動和縮放
+        document.addEventListener('touchmove', (e) => {
+            if (gameState.isPlaying) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // 防止雙擊縮放 - iOS/Android 通用
+        document.addEventListener('touchstart', (e) => {
+            const now = Date.now();
+            
+            if (e.touches.length > 1) {
+                // 多點觸控，防止縮放
+                e.preventDefault();
+                preventZoom = true;
+            } else if (now - lastTouchEnd <= 300) {
+                // 快速雙擊，防止縮放
+                e.preventDefault();
+                preventZoom = true;
+            } else {
+                preventZoom = false;
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            
+            if (preventZoom || (now - lastTouchEnd <= 300)) {
+                e.preventDefault();
+            }
+            
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        // 防止上下文選單 (長按)
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 防止選擇文字
+        document.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 初始化事件監聽器
+        function initEventListeners() {
+            console.log('初始化事件監聽器');
+            
+            // 主選單按鈕
+            const startGameBtn = document.getElementById('startGameBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const levelSelectBtn = document.getElementById('levelSelectBtn');
+            
+            if (startGameBtn) {
+                startGameBtn.addEventListener('click', showLevelSelect);
+                startGameBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showLevelSelect();
+                });
+            }
+            
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', showSettings);
+                settingsBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showSettings();
+                });
+            }
+            
+            if (levelSelectBtn) {
+                levelSelectBtn.addEventListener('click', showLevelSelect);
+                levelSelectBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showLevelSelect();
+                });
+            }
+            
+            // 關卡按鈕
+            const levelButtons = document.querySelectorAll('.level-button');
+            levelButtons.forEach(button => {
+                const level = parseInt(button.dataset.level);
+                button.addEventListener('click', () => startLevel(level));
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    startLevel(level);
+                });
+            });
+            
+            // 返回按鈕
+            const backToMainBtn = document.getElementById('backToMainBtn');
+            if (backToMainBtn) {
+                backToMainBtn.addEventListener('click', showMainMenu);
+                backToMainBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showMainMenu();
+                });
+            }
+            
+            const backToMainFromSettings = document.getElementById('backToMainFromSettings');
+            if (backToMainFromSettings) {
+                backToMainFromSettings.addEventListener('click', showMainMenu);
+                backToMainFromSettings.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showMainMenu();
+                });
+            }
+            
+            // 遊戲中按鈕
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', pauseGame);
+                pauseBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    pauseGame();
+                });
+            }
+            
+            const mainMenuBtn = document.getElementById('mainMenuBtn');
+            if (mainMenuBtn) {
+                mainMenuBtn.addEventListener('click', showMainMenu);
+                mainMenuBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showMainMenu();
+                });
+            }
+            
+            // 結果畫面按鈕
+            const nextLevelBtn = document.getElementById('nextLevelBtn');
+            if (nextLevelBtn) {
+                nextLevelBtn.addEventListener('click', nextLevel);
+                nextLevelBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    nextLevel();
+                });
+            }
+            
+            const levelSelectFromResult = document.getElementById('levelSelectFromResult');
+            if (levelSelectFromResult) {
+                levelSelectFromResult.addEventListener('click', showLevelSelect);
+                levelSelectFromResult.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showLevelSelect();
+                });
+            }
+            
+            const mainMenuFromResult = document.getElementById('mainMenuFromResult');
+            if (mainMenuFromResult) {
+                mainMenuFromResult.addEventListener('click', showMainMenu);
+                mainMenuFromResult.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    showMainMenu();
+                });
+            }
+        }
+
+        // 初始化 - 跨平台優化
+        function initGame() {
+            console.log('遊戲初始化開始');
+            
+            // 應用設備特定優化
+            applyDeviceOptimizations();
+            
+            // 初始化事件監聽器
+            initEventListeners();
+            
+            // 預載音效系統
+            document.addEventListener('touchstart', initAudio, { once: true });
+            document.addEventListener('click', initAudio, { once: true });
+            
+            // 顯示主選單
+            showMainMenu();
+            
+            console.log('遊戲初始化完成');
+        }
+
+        // 多重初始化確保兼容性
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGame);
+        } else {
+            initGame();
+        }
+
+        window.addEventListener('load', () => {
+            // 確保所有資源載入完成後再次檢查
+            if (!isAudioInitialized) {
+                console.log('延遲初始化音效系統');
+            }
+            
+            // 處理 iOS Safari 的特殊情況
+            setTimeout(() => {
+                handleOrientationChange();
+            }, 100);
+        });
+
+        // 頁面可見性變更處理
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameState.isPlaying) {
+                // 頁面隱藏時暫停遊戲
+                pauseGame();
+            }
+        });
+
+        // 應用程式進入背景/前景處理 (iOS)
+        window.addEventListener('pagehide', () => {
+            if (gameState.isPlaying) {
+                pauseGame();
+            }
+        });
+
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) {
+                // 從快取恢復，重新初始化
+                handleOrientationChange();
+            }
+        });
+
+        // 屏幕方向和視窗大小處理
+        function handleOrientationChange() {
+            // 延遲處理，等待瀏覽器完成方向變更
+            setTimeout(() => {
+                // 重新計算視窗大小
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // iOS Safari 地址欄處理
+                if (window.navigator.userAgent.includes('Safari') && !window.navigator.userAgent.includes('Chrome')) {
+                    document.body.style.height = window.innerHeight + 'px';
+                }
+                
+                // 重新調整遊戲元素位置
+                if (gameState.isPlaying) {
+                    // 重新定位目標物件
+                    document.querySelectorAll('.target').forEach(target => {
+                        const x = parseFloat(target.style.left);
+                        const y = parseFloat(target.style.top);
+                        
+                        // 確保目標在新的視窗範圍內
+                        if (x > window.innerWidth - 100) {
+                            target.style.left = (window.innerWidth - 100) + 'px';
+                        }
+                        if (y > window.innerHeight - 200) {
+                            target.style.top = (window.innerHeight - 200) + 'px';
+                        }
+                    });
+                }
+            }, 300);
+        }
+
+        // 監聽方向變更
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+
+        // 設定初始視窗高度變數
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+        // 檢測設備類型
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            const isAndroid = /Android/.test(userAgent);
+            const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+            const isChrome = /Chrome/.test(userAgent);
+            
+            return {
+                isIOS,
+                isAndroid,
+                isSafari,
+                isChrome,
+                isMobile: isIOS || isAndroid
+            };
+        }
+
+        // 設備特定優化
+        function applyDeviceOptimizations() {
+            const device = detectDevice();
+            
+            if (device.isIOS) {
+                // iOS 特定優化
+                document.body.classList.add('ios');
+                
+                // 防止 Safari 彈跳效果
+                document.body.style.position = 'fixed';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            if (device.isAndroid) {
+                // Android 特定優化
+                document.body.classList.add('android');
+                
+                // Android Chrome 地址欄處理
+                if (device.isChrome) {
+                    const metaTheme = document.querySelector('meta[name="theme-color"]');
+                    if (metaTheme) {
+                        metaTheme.content = '#1e3c72';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
