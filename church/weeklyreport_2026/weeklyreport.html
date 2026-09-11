@@ -13,102 +13,18 @@
 
 </head>
 
-
 <body>
 
-  <h1>赤峰街教會週報查詢</h1>
-    <form id="myForm">
+</form>
 
-         <label>
-    區間日期:
-    <input type="date" name="username" min="20260101" max="20261231" />
-  </label>
+  <h1>赤峰街教會2026週報查詢</h1>
+  <form action="https://script.google.com/macros/s/AKfycbw1b0NKoLVdXAclU7HVKdv9xWUQNZPfl_cKQduhIT-EWt_I2Iy5CwGeLJv-mJUazB_d/exec">
 
 
+  <input type="submit" value="開始查詢" >
 
 
-        <button type="button" onclick="getInputValue()">送出</button>
-
-
-    </form>
-
-
-  <h1>赤峰街教會週報答案</h1>
-
-  <form id="myForm2">
-
-         <label>
-    區間日期:
-    <input type="date" name="username" min="20260101" max="20261231" />
-  </label>
-
-
-
-
-        <button type="button" onclick="getInputValue2()">送出</button>
-
-
-    </form>
-
-
-
-
-
-
-
-
-
-
-    <script>
-
-
-        function getInputValue() {
-
-
-            var inputVal = document.forms["myForm"]["username"].value;
-            if (inputVal == "") {
-            alert("請輸入正確日期");
-             return false;
-            }
-
-
-
-            inputVal=inputVal.replace('2026-','')
-
-            var format="週報.pdf"
-            window.location.assign(inputVal+format)
-
-
-
-
-        }
-
-
-        function getInputValue2() {
-
-
-            var inputVal = document.forms["myForm2"]["username"].value;
-            if (inputVal == "") {
-            alert("請輸入正確日期");
-             return false;
-            }
-
-
-
-            inputVal=inputVal.replace('2026-','')
-
-            var format="週報-答案.pdf"
-            window.location.assign(inputVal+format)
-
-
-
-
-        }
-
-
-
-    </script>
-
+  </form>
 
 </body>
 
